@@ -116,6 +116,17 @@ export class SendEmailDTO {
   email: string;
 }
 
+export class SendEmailDTOOOOOO {
+  @ApiProperty({example: 'Hello Client, I hope this email finds you well'})
+  body: string;
+  @ApiProperty({example: 'Client profile'})
+  subject: string;
+  @ApiProperty({example: ['clientemail@example.com', 'shu@example.com']})
+  email: string[];
+  @ApiProperty({example: '4prbdfdyrsidzjrhrv3aekbrugvoxwj9'})
+  hashedId: string;
+}
+
 export class MailJetEmailInputType {
   html: string;
   text: string;

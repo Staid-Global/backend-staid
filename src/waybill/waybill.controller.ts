@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { BaseResponseTypeDTO, pagiQuoteDTO } from 'src/utils/utils.types';
+import { BaseResponseTypeDTO, pagiQuoteDTO, SendEmailDTOOOOOO } from 'src/utils/utils.types';
 import { WaybillService } from './waybill.service';
 import { CreateWaybillDto } from './dto/create-waybill.dto';
 import { UpdateWaybillDto } from './dto/update-waybill.dto';
@@ -158,5 +158,16 @@ export class WaybillController {
       metadata: data,
       generatedAt: new Date().toISOString(),
     };
+  }
+
+  @Post('send/waybill-email')
+  @ApiOperation({ summary: 'Send waybill email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendWaybillEmail(@Body() dto: SendEmailDTOOOOOO): Promise<BaseResponseTypeDTO> {
+    return this.waybillService.sendWaybillEmaill(dto);
   }
 }

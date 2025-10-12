@@ -18,8 +18,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { SendEmailDTO } from 'src/utils/utils.types';
-import { sendEmail } from 'src/Email/comfirmation';
+import { SendEmailDTO, SendEmailDTOOOOOO } from 'src/utils/utils.types';
+import { sendEmail } from 'src/Email/emailsmpt';
 import { MailjetService } from 'src/Email/mailjet';
 
 @Injectable()
@@ -275,4 +275,6 @@ export class AuthService {
       code: HttpStatus.OK,
     };
   }
+
+  
 }

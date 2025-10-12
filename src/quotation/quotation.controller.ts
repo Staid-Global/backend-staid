@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { BaseResponseTypeDTO } from 'src/auth/dto/create-auth.dto';
-import { PaginationFilterDTO, pagiQuoteDTO } from 'src/utils/utils.types';
+import { PaginationFilterDTO, pagiQuoteDTO, SendEmailDTOOOOOO } from 'src/utils/utils.types';
 
 @ApiTags('Quotation')
 @Controller('quotation')
@@ -81,6 +81,20 @@ export class QuotationController {
   ): Promise<BaseResponseTypeDTO> {
     return this.quotationService.findAQuotation(req.user.id, id);
   }
+
+  // @Get('hashed/:id')
+  // @ApiOperation({ summary: 'get a quotation by hashedId' })
+  // @ApiResponse({ status: HttpStatus.OK, description: 'Quotation retrived' })
+  // @ApiResponse({
+  //   status: HttpStatus.BAD_REQUEST,
+  //   description: 'Invalid input data',
+  // })
+  // async findAQuotationByHashedId(
+  //   @Request() req,
+  //   @Param('id') id: string,
+  // ): Promise<BaseResponseTypeDTO> {
+  //   return this.quotationService.findAQuotationByHashedId( id);
+  // }
 
   @Get()
   @ApiOperation({ summary: 'get all quotations' })
@@ -163,5 +177,16 @@ export class QuotationController {
       metadata: data,
       generatedAt: new Date().toISOString(),
     };
+  }
+
+  @Post('/email-quote')
+  @ApiOperation({ summary: 'Send any email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendQuotationEmail(@Body() dto: SendEmailDTOOOOOO): Promise<BaseResponseTypeDTO> {
+    return this.quotationService.sendQuotationEmaill(dto);
   }
 }

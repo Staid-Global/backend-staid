@@ -22,7 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { BaseResponseTypeDTO, pagiQuoteDTO } from 'src/utils/utils.types';
+import { BaseResponseTypeDTO, pagiQuoteDTO, SendEmailDTOOOOOO } from 'src/utils/utils.types';
 
 @ApiTags('Invoice')
 @Controller('invoice')
@@ -163,4 +163,16 @@ export class InvoiceController {
       generatedAt: new Date().toISOString(),
     };
   }
+
+    @Post('send/email')
+    @ApiOperation({ summary: 'Send invoice email' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+    @ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: 'Invalid input data',
+    })
+    async sendInvoiceEmail(@Body() dto: SendEmailDTOOOOOO): Promise<BaseResponseTypeDTO> {
+      return this.invoiceService.sendInvoiceEmaill(dto);
+    }
+  
 }

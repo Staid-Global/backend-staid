@@ -25,7 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { SendEmailDTO } from 'src/utils/utils.types';
+import { SendEmailDTO, SendEmailDTOOOOOO } from 'src/utils/utils.types';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -109,14 +109,14 @@ export class AuthController {
     return result;
   }
 
-  @Post('send/email')
-  @ApiOperation({ summary: 'Send any email' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
-  })
-  async SendEmail(@Body() dto: SendEmailDTO): Promise<BaseResponseTypeDTO> {
-    return this.authService.sendAnyEmail(dto);
-  }
+  // @Post('send/email')
+  // @ApiOperation({ summary: 'Send any email' })
+  // @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  // @ApiResponse({
+  //   status: HttpStatus.BAD_REQUEST,
+  //   description: 'Invalid input data',
+  // })
+  // async SendEmail(@Body() dto: SendEmailDTO): Promise<BaseResponseTypeDTO> {
+  //   return this.authService.sendAnyEmail(dto);
+  // }
 }

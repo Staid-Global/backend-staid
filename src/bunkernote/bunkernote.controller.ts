@@ -21,12 +21,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { BaseResponseTypeDTO, pagiQuoteDTO } from 'src/utils/utils.types';
+import {
+  BaseResponseTypeDTO,
+  pagiQuoteDTO,
+  SendEmailDTOOOOOO,
+} from 'src/utils/utils.types';
 
 @ApiTags('Bunkernote')
 @Controller('bunkernote')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class BunkernoteController {
   constructor(private readonly bunkernoteService: BunkernoteService) {}
 
@@ -64,6 +66,8 @@ export class BunkernoteController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'get a bunkernote' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Bunkernote retrived' })
   @ApiResponse({
@@ -79,6 +83,8 @@ export class BunkernoteController {
 
   @Get()
   @ApiOperation({ summary: 'get all bunkernotes' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.OK, description: 'Bunkernotes retrived' })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -105,5 +111,18 @@ export class BunkernoteController {
     @Param('id') id: string,
   ): Promise<BaseResponseTypeDTO> {
     return this.bunkernoteService.deleteABunker(req.user.id, id);
+  }
+
+  @Post('send/email')
+  @ApiOperation({ summary: 'Send bunker-note email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendBunkernoteEmail(
+    @Body() dto: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    return this.bunkernoteService.sendBunkernoteEmaill(dto);
   }
 }
