@@ -109,14 +109,39 @@ export class AuthController {
     return result;
   }
 
-  // @Post('send/email')
-  // @ApiOperation({ summary: 'Send any email' })
-  // @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  //** Uncomment to create Super Admin routes */
+  //** --------------------------------*/
+  //** Super Admin routes */
+  //** --------------------------------*/
+
+  // @Post('super/admin')
+  // // @ApiBearerAuth()
+  // @ApiOperation({ summary: 'Register a super admin' })
+  // @ApiResponse({
+  //   status: HttpStatus.CREATED,
+  //   description: 'Super Admin Register',
+  // })
   // @ApiResponse({
   //   status: HttpStatus.BAD_REQUEST,
   //   description: 'Invalid input data',
   // })
-  // async SendEmail(@Body() dto: SendEmailDTO): Promise<BaseResponseTypeDTO> {
-  //   return this.authService.sendAnyEmail(dto);
+  // async super(
+  //   @Request() req,
+  //   @Body() dto: registerDTO,
+  // ): Promise<BaseResponseTypeDTO> {
+  //   return this.authService.createSuperAdmin(dto);
   // }
+
+  //** Uncomment to send email via routes */
+
+  @Post('send/email')
+  @ApiOperation({ summary: 'Send any email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async SendEmail(@Body() dto: SendEmailDTO): Promise<BaseResponseTypeDTO> {
+    return this.authService.sendAnyEmail(dto);
+  }
 }

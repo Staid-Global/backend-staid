@@ -49,7 +49,7 @@ export class AuthService {
         throw new ConflictException('Email already exist');
       }
 
-      const Password = 'Password123';
+      const Password = process.env.ADMINDEFAULTPASSWORD;
       const hashedPassword = await bcrypt.hash(Password, 10);
       const user = new this.userModel({
         fullname: payload.fullname,
@@ -276,5 +276,38 @@ export class AuthService {
     };
   }
 
-  
+  async createSuperAdmin(
+    // userId: string,
+    payload: registerDTO,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const emailExist = await this.userModel.findOne({ email: payload.email });
+      if (emailExist) {
+        throw new ConflictException('Email already exist');
+      }
+
+      const Password = 'Password123';
+      const hashedPassword = await bcrypt.hash(Password, 10);
+      const user = new this.userModel({
+        fullname: payload.fullname,
+        email: payload.email,
+        password: hashedPassword,
+        role: payload.role,
+        status: payload.status,
+      });
+      await user.save();
+
+      return {
+        data: user,
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Super Admin registered sucessfully',
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        'Error: Can not register a user',
+        error.message,
+      );
+    }
+  }
 }
