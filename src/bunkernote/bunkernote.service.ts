@@ -277,10 +277,10 @@ export class BunkernoteService {
     const bunkernote = await this.bunkerModel.findOne({
       _id: payload.hashedId,
     });
-    const co = await this.companyModel.findById(bunkernote.seller);
-    if (!co) {
-      throw new NotFoundException('Company not found');
-    }
+    // const co = await this.companyModel.findById(bunkernote.seller);
+    // if (!co) {
+    //   throw new NotFoundException('Company not found');
+    // }
 
     const body = `
         <!DOCTYPE html>
@@ -350,7 +350,7 @@ export class BunkernoteService {
         </div>
 
         <div class="content">
-        <p>Dear ${co.name},</p>
+        <p>Dear ${bunkernote.seller},</p>
 
         <p>${payload.body}</p>
 

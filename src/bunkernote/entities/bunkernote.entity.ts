@@ -15,7 +15,7 @@ export class Bunkernote {
   @Prop()
   vessel_name: string;
 
-  @Prop({ ref: 'Company' })
+  @Prop()
   seller: string;
 
   @Prop()

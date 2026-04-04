@@ -11,8 +11,8 @@ export class CreateBunkernoteDto {
   port: string;
 
   @ApiProperty({
-    example: '689f3dd079974d2293cb94f4',
-    description: 'Selected Company_id',
+    example: 'seller name',
+    description: '',
   })
   @IsString()
   seller: string;
