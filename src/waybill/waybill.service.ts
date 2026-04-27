@@ -542,8 +542,9 @@ export class WaybillService {
   private async renderWaybillTemplateToPdf(html: string): Promise<Buffer> {
     const browser = await launchPuppeteerBrowser();
 
+    const page = await browser.newPage();
+
     try {
-      const page = await browser.newPage();
       await page.setViewport({ width: 800, height: 1120, deviceScaleFactor: 1 });
       await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.emulateMediaType('print');
@@ -554,7 +555,7 @@ export class WaybillService {
       });
       return Buffer.from(pdfBytes);
     } finally {
-      await browser.close();
+      await page.close();
     }
   }
 

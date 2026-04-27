@@ -3,6 +3,8 @@ import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 
 const SYSTEM_CHROME_PATH = '/usr/bin/google-chrome-stable';
+let sharedBrowserPromise: Promise<Browser> | null = null;
+let sharedBrowser: Browser | null = null;
 
 export function getPuppeteerLaunchOptions(): LaunchOptions {
   const options: LaunchOptions = {
@@ -37,16 +39,38 @@ function installChromeBinary(): void {
 }
 
 export async function launchPuppeteerBrowser(): Promise<Browser> {
-  const options = getPuppeteerLaunchOptions();
-
-  try {
-    return await puppeteer.launch(options);
-  } catch (error) {
-    if (!isMissingChromeError(error)) {
-      throw error;
-    }
-
-    installChromeBinary();
-    return puppeteer.launch(getPuppeteerLaunchOptions());
+  if (sharedBrowser?.connected) {
+    return sharedBrowser;
   }
+
+  if (!sharedBrowserPromise) {
+    sharedBrowserPromise = (async () => {
+      const options = getPuppeteerLaunchOptions();
+
+      try {
+        const browser = await puppeteer.launch(options);
+        sharedBrowser = browser;
+        browser.once('disconnected', () => {
+          sharedBrowser = null;
+          sharedBrowserPromise = null;
+        });
+        return browser;
+      } catch (error) {
+        if (!isMissingChromeError(error)) {
+          throw error;
+        }
+
+        installChromeBinary();
+        const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+        sharedBrowser = browser;
+        browser.once('disconnected', () => {
+          sharedBrowser = null;
+          sharedBrowserPromise = null;
+        });
+        return browser;
+      }
+    })();
+  }
+
+  return sharedBrowserPromise;
 }

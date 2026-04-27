@@ -422,8 +422,9 @@ export class BunkernoteService {
     const html = await this.compileBunkernoteTemplate(data);
     const browser = await launchPuppeteerBrowser();
 
+    const page = await browser.newPage();
+
     try {
-      const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -432,7 +433,7 @@ export class BunkernoteService {
       });
       return Buffer.from(pdfBytes);
     } finally {
-      await browser.close();
+      await page.close();
     }
   }
 

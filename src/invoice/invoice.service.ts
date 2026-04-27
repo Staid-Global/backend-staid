@@ -1249,8 +1249,9 @@ s
 
     const browser = await launchPuppeteerBrowser();
 
+    const page = await browser.newPage();
+
     try {
-      const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -1259,7 +1260,7 @@ s
       });
       return Buffer.from(pdfBytes);
     } finally {
-      await browser.close();
+      await page.close();
     }
   }
 
@@ -1275,8 +1276,9 @@ s
 
     const browser = await launchPuppeteerBrowser();
 
+    const page = await browser.newPage();
+
     try {
-      const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -1285,7 +1287,7 @@ s
       });
       return Buffer.from(pdfBytes);
     } finally {
-      await browser.close();
+      await page.close();
     }
   }
 
@@ -1301,8 +1303,9 @@ s
 
     const browser = await launchPuppeteerBrowser();
 
+    const page = await browser.newPage();
+
     try {
-      const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -1311,7 +1314,7 @@ s
       });
       return Buffer.from(pdfBytes);
     } finally {
-      await browser.close();
+      await page.close();
     }
   }
 
