@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rail Road — quotation</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f2f4f7;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      main {
+        width: 100%;
+        max-width: 800px;
+        margin: 2rem auto;
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 8px 30px rgba(10, 10, 20, 0.08);
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+        min-height: 100vh;
+      }
+
+      .header {
+        text-align: center;
+        width: 100%;
+        position: relative;
+        padding: 12px 10px 8px;
+        background: transparent;
+        flex-shrink: 0;
+      }
+
+      .header img {
+        width: 100%;
+        max-height: 130px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .main-content {
+        padding: 14px 18px 20px;
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      .sub-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .sn {
+        width: 5%;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .address {
+        border: 2px solid #1e1b4b;
+        padding: 10px;
+        flex: 1;
+        min-width: 100px;
+        max-width: 35%;
+        font-size: 13px;
+        line-height: 1.45;
+        border-radius: 10px;
+      }
+
+      .service {
+        background-color: #1e1b4b;
+        color: #fff;
+        padding: 10px 30px;
+        text-align: center;
+        align-self: flex-start;
+        border-radius: 6px;
+        font-size: 16px;
+        white-space: nowrap;
+      }
+
+      .date-box {
+        width: 180px;
+        flex-shrink: 0;
+        text-align: center;
+      }
+
+      .date-title {
+        background: #1e1b4b;
+        color: #fff;
+        padding: 8px;
+        font-weight: 800;
+        border-radius: 10px 10px 0 0;
+      }
+
+      .date-inner {
+        display: flex;
+        border: 3px solid #1e1b4b;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+
+      .date-inner div {
+        flex: 1;
+        padding: 10px;
+        font-weight: 700;
+        border-right: 1px solid #1e1b4b;
+      }
+
+      .date-inner div:last-child {
+        border-right: none;
+      }
+
+      .quotation-table {
+        width: 100%;
+        margin: 18px 0;
+        border-collapse: collapse;
+      }
+
+      .quotation-table thead tr th,
+      .quotation-table tbody tr td {
+        padding: 5px 10px;
+      }
+
+      .quotation-table thead tr,
+      .quotation-table tbody tr {
+        margin-bottom: 6px;
+        display: table-row;
+      }
+
+      .header-cell {
+        background-color: #1e1b4b;
+        color: white;
+        padding: 10px 12px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 13px;
+      }
+
+      .quotation-table thead tr th:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+      .quotation-table thead tr th:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+
+      .quotation-table tbody tr.spacer td {
+        height: 6px;
+        background: transparent;
+        border: none;
+        padding: 0;
+      }
+
+      .data-cell {
+        border-top: 2px solid #1e1b4b;
+        border-bottom: 2px solid #1e1b4b;
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: white;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .data-cell:first-child {
+        border-left: 2px solid #1e1b4b;
+        border-radius: 12px;
+      }
+
+      .data-cell:last-child {
+        border-right: 2px solid #1e1b4b;
+        border-radius: 12px;
+      }
+
+      .description-cell {
+        text-align: left;
+      }
+
+      .bank-container {
+        width: 100%;
+        margin: 2rem 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+
+      .bank-info {
+        margin-top: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .total-container {
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #1e1b4b;
+        gap: 12px;
+      }
+
+      .total-container p {
+        font-weight: bold;
+        font-size: 13px;
+      }
+
+      .total-container div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 16px;
+      }
+
+      .total-value {
+        border: 2px solid #18153b;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-weight: 800;
+        min-width: 140px;
+        text-align: right;
+      }
+
+      .amount-words-container {
+        width: 100%;
+        margin: 0 auto 8px;
+        font-size: 13px;
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+      }
+
+      .amount-words {
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .underline {
+        flex: 1;
+        border-bottom: 2px solid #111;
+        margin-bottom: 2px;
+        padding-bottom: 6px;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .signature {
+        width: 100%;
+        margin: 1rem auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cst-sign {
+        border-top: 2px solid #000;
+        width: 200px;
+        text-align: center;
+        padding-top: 4px;
+        font-weight: 700;
+      }
+
+      .signature img {
+        object-fit: contain;
+        display: block;
+      }
+
+      .footer {
+        width: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px 0;
+        flex-shrink: 0;
+        margin-top: auto;
+      }
+
+      .footer p {
+        padding: 0.6rem 0.9rem;
+        width: 100%;
+        font-size: 13px;
+        background-color: #1e1b4b;
+        color: #fff;
+        border-radius: 6px;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 5mm;
+      }
+
+      @media print {
+        html,
+        body {
+          background: white;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+        }
+
+        main {
+          width: 100%;
+          min-width: unset;
+          margin: 0;
+          background: white;
+          border-radius: 0;
+          box-shadow: none;
+          page-break-after: avoid;
+          page-break-inside: avoid;
+        }
+
+        .main-content {
+          margin-bottom: 0;
+          padding: 10px 12px 12px;
+        }
+
+        body {
+          background: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .header {
+          page-break-inside: avoid;
+        }
+
+        .sub-header {
+          page-break-inside: avoid;
+        }
+
+        .quotation-table {
+          page-break-inside: avoid;
+          width: 100%;
+        }
+
+        .quotation-table tbody tr {
+          page-break-inside: avoid;
+        }
+
+        .footer {
+          page-break-inside: avoid;
+          margin: 0;
+          padding: 0 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="header">
+        <img src="../images/Rail-road.png" alt="Rail Road Logo" />
+      </div>
+
+      <div class="main-content">
+        <div class="sub-header">
+          <div class="address">
+            <p class="bold">To:</p>
+            <p>
+              <strong>{{TO_NAME}}</strong><br />
+              {{TO_ADDRESS}}
+            </p>
+          </div>
+
+          <div><h3 class="service">Quotation</h3></div>
+
+          <div class="date-box">
+            <div class="date-title">DATE</div>
+            <div class="date-inner">
+              <div>{{DATE_DAY}}</div>
+              <div>{{DATE_MONTH}}</div>
+              <div>{{DATE_YEAR}}</div>
+            </div>
+          </div>
+        </div>
+
+        <table class="quotation-table">
+          <thead>
+            <tr>
+              <th class="header-cell sn">S/N</th>
+              <th class="header-cell">Qty.</th>
+              <th class="header-cell">Description of Goods</th>
+              <th class="header-cell">Rate</th>
+              <th class="header-cell">Amount (₦)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ROWS_HTML}}
+          </tbody>
+        </table>
+
+        <div class="bank-container">
+          <div class="bank-info">
+            <strong>Bank Name: {{BANK_NAME}}</strong><br />
+            <strong>Account Name: {{ACCOUNT_NAME}}</strong><br />
+            <strong>Account Number: {{ACCOUNT_NUMBER}}</strong>
+          </div>
+
+          <div class="total-container">
+            <div>
+              <h4>Total ₦</h4>
+              <span class="total-value">{{TOTAL_VALUE}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="amount-words-container">
+          <span class="amount-words">Amount in words:</span>
+          <span class="underline">{{AMOUNT_IN_WORDS}}</span>
+        </div>
+
+        <div class="signature">
+          <div><p class="cst-sign">Customer's Signature</p></div>
+          <div>
+            <img
+              src="../images/signature-rail-road-track.png"
+              alt="Signature"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Goods sold in good condition are not refundable.</p>
+        <p>No refund of money after payment. Thanks, call again.</p>
+      </div>
+    </main>
+  </body>
+</html>

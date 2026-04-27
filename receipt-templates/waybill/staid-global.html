@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>waybill</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 1rem;
+        font-size: 13px;
+        background: #fff;
+        color: #000;
+      }
+
+      main {
+        width: 100%;
+        min-width: 520px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      .horizontal-line {
+        border-top: 1px solid #444;
+        margin: 1.5rem auto;
+        width: 100%;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+      }
+
+      .logo {
+        width: 100%;
+        max-width: 220px;
+        height: auto;
+        flex-shrink: 0;
+      }
+
+      .customer-info {
+        width: 100%;
+        margin: 1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .customer-meta,
+      .customer-address {
+        font-weight: bold;
+        flex: 1;
+        /* min-width: 160px; */
+      }
+
+      .waybill {
+        flex-shrink: 0;
+        text-align: center;
+      }
+
+      .customer-meta span,
+      .customer-address span {
+        font-weight: normal;
+      }
+
+      .customer-address p,
+      .customer-meta p {
+        margin: 5px 0;
+      }
+
+      .customer-meta {
+        text-align: right;
+      }
+
+      /* Table */
+      .waybill-table-container {
+        flex: 1;
+        width: 100%;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        text-align: center;
+        padding: 0.75rem;
+        font-size: 13px;
+      }
+
+      .description {
+        text-align: left;
+      }
+
+      .disclaimer {
+        color: red;
+      }
+
+      .signature {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 3rem 2rem 1rem;
+        font-weight: bold;
+      }
+
+      .signature-line {
+        width: 200px;
+        text-align: center;
+        display: block;
+        border-top: 1px solid #000;
+        padding-top: 5px;
+      }
+
+      .signature img {
+        width: 160px;
+        max-height: 80px;
+        object-fit: contain;
+        display: block;
+      }
+
+      h1 {
+        background: #000;
+        color: #fff;
+        font-size: 18px;
+        letter-spacing: 3px;
+        padding: 0.5rem 2rem;
+        white-space: nowrap;
+      }
+
+      address {
+        font-weight: 600;
+        line-height: 1.5;
+        font-style: normal;
+        max-width: 400px;
+      }
+
+      a {
+        text-decoration: none;
+        color: black;
+      }
+
+      .sn {
+        width: 5%;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .end {
+        border-top: 1px solid #444;
+        width: 100%;
+        background: #fff;
+        margin-top: auto;
+        padding-bottom: 0.5rem;
+      }
+
+      @media print {
+        body {
+          padding: 0;
+          margin: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        main {
+          padding: 1rem;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .horizontal-line {
+          margin: 1rem 0;
+        }
+
+        .waybill-table-container table {
+          page-break-inside: auto;
+        }
+
+        .signature {
+          page-break-inside: avoid;
+        }
+
+        .end {
+          margin-top: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="horizontal-line"></div>
+
+      <div class="header">
+        <img
+          src="../images/StaidLogo.svg"
+          alt="Staid Global Logo"
+          class="logo"
+        />
+
+        <address>
+          350 Ikorodu Road, Maryland, Lagos State,<br />
+          Tel: <a href="tel:08034743098">08034743098</a>,
+          <a href="tel:08181044690">08181044690</a>,<br />
+          <a
+            href="https://www.staidgloballtd.com"
+            target="_blank"
+            rel="noopener"
+            >www.staidgloballtd.com</a
+          >,<br />
+          <a href="mailto:woleolaleye@2ventureng.com"
+            >woleolaleye@2ventureng.com</a
+          >
+        </address>
+      </div>
+
+      <div class="customer-info">
+        <div class="customer-address">
+          <p>Issued to: <span>{{TO_NAME}}</span></p>
+          <p>
+            Address:
+            <span> {{TO_ADDRESS}}<br /> </span>
+          </p>
+        </div>
+
+        <div class="waybill">
+          <h1>Waybill</h1>
+        </div>
+
+        <div class="customer-meta">
+          <p>Waybill No: <span>{{WAYBILL_NO}}</span></p>
+          <p>Date: <span>{{WAYBILL_DATE}}</span></p>
+          <p>LPO No: <span>{{LPO_NO}}</span></p>
+        </div>
+      </div>
+
+      <div class="waybill-table-container">
+        <table class="waybill-table">
+          <thead>
+            <tr>
+              <th class="sn">S/N</th>
+              <th class="description">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ROWS_HTML}}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="signature">
+        <div>
+          <p class="signature-line">Customer Signature</p>
+        </div>
+        <div>
+          <img src="../images/staid-signature.png" alt="Signature" />
+        </div>
+      </div>
+
+      <div class="end"></div>
+    </main>
+  </body>
+</html>

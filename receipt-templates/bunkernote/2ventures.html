@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bunker Note - {{BUNKER_NO}}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        width: 100%;
+        background: #fff;
+        color: #000;
+      }
+
+      main {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+      }
+
+      .header {
+        text-align: center;
+        margin-top: 1rem;
+      }
+
+      .header img {
+        width: 100%;
+        height: auto;
+      }
+
+      h4 {
+        margin: 1rem 0 0.3rem 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.8rem 0;
+        font-size: 14px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 0.4rem 0.5rem;
+      }
+
+      th {
+        font-weight: 600;
+        background: #f5f5f5;
+        white-space: nowrap;
+      }
+
+      td {
+        vertical-align: top;
+      }
+
+      .data {
+        width: 45%;
+        font-weight: 600;
+      }
+
+      .signature {
+        width: 80%;
+        margin: 2rem auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .signature img {
+        width: 140px;
+        height: auto;
+      }
+
+      .cst-sign {
+        border-top: 1px solid #000;
+        text-align: center;
+        padding-top: 0.3rem;
+      }
+
+      .normal {
+        font-weight: normal;
+      }
+
+      .disclaimer {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-left: 4px solid #2563eb;
+        margin-top: 20px;
+        font-size: 13px;
+      }
+
+      .footer {
+        text-align: center;
+        color: #777;
+        font-size: 12px;
+        margin-top: 1rem;
+      }
+
+      @media print {
+        body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 0;
+        }
+        main {
+          padding: 10mm 15mm;
+        }
+        .signature {
+          page-break-inside: avoid;
+        }
+        .disclaimer {
+          page-break-inside: avoid;
+        }
+        @page {
+          size: A4;
+          margin: 10mm 15mm;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <div class="header">
+        <img src="../images/2Ventures-logo.png" alt="2Ventures Logo" />
+        <h2>BUNKER DELIVERY NOTE</h2>
+        <p><strong>Status:</strong> {{STATUS}}</p>
+      </div>
+
+      <div class="content">
+        <h4>VESSEL INFORMATION</h4>
+        <table>
+          <tbody>
+            <tr>
+              <td class="data">NAME OF VESSEL</td>
+              <td>{{VESSEL_NAME}}</td>
+            </tr>
+            <tr>
+              <td class="data">PORT</td>
+              <td>{{PORT}}</td>
+            </tr>
+            <tr>
+              <td class="data">SELLER</td>
+              <td>{{SELLER_NAME}}</td>
+            </tr>
+            <tr>
+              <td class="data">DELIVERY</td>
+              <td>{{DELIVERY}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>DELIVERY DETAILS</h4>
+        <table>
+          <tbody>
+            <tr>
+              <td class="data">DATE OF COMMENCEMENT OF DELIVERY</td>
+              <td>{{DATE_OF_COMMENCEMENT}}</td>
+            </tr>
+            <tr>
+              <td class="data">PRODUCT</td>
+              <td>{{PRODUCT}}</td>
+            </tr>
+            <tr>
+              <td class="data">QUANTITY</td>
+              <td>{{QUANTITY}}</td>
+            </tr>
+            <tr>
+              <td class="data">START PUMPING</td>
+              <td>{{START_PUMPING}}</td>
+            </tr>
+            <tr>
+              <td class="data">FINISH PUMPING</td>
+              <td>{{FINISH_PUMPING}}</td>
+            </tr>
+            <tr>
+              <td class="data">DURATION</td>
+              <td>{{DURATION}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>PRODUCT ANALYSIS</h4>
+        <table>
+          <tbody>
+            <tr>
+              <td class="data">Density at 15°C</td>
+              <td>{{DENSITY}}</td>
+            </tr>
+            <tr>
+              <td class="data">Flash Point (°C)</td>
+              <td>{{FLASHPOINT}}</td>
+            </tr>
+            <tr>
+              <td class="data">Sulphur Content (% m/m)</td>
+              <td>{{SULPHUR}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="disclaimer">
+          <strong>Disclaimer:</strong><br />
+          {{DISCLAIMER_NOTE}}
+        </div>
+      </div>
+
+      <div class="signature">
+        <div>
+          <img
+            src="../images/signature-2-ventures.png"
+            alt="2Ventures Signature"
+          />
+        </div>
+        <div>
+          <p class="cst-sign">
+            Signed: {{SELLER_NAME}}<br />
+            <span class="normal">Receiving Vessel</span>
+          </p>
+        </div>
+      </div>
+
+    </main>
+  </body>
+</html>

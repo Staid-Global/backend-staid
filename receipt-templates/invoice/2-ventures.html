@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2Ventures Invoice Template</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #fff;
+        color: #000;
+      }
+
+      main {
+        width: 100%;
+        max-width: 100%;
+        min-width: 520px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+        min-height: 100vh;
+      }
+
+      .top {
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      hr {
+        width: 95%;
+        margin: 0 auto;
+        border: none;
+        border-bottom: 1px solid #4444449b;
+      }
+
+      .header {
+        text-align: center;
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .header img {
+        width: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .sub-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .sub-header > div:first-child,
+      .sub-header > div:last-child {
+        flex: 1;
+        min-width: 160px;
+      }
+
+      .sub-header > div:last-child {
+        text-align: right;
+      }
+
+      .service {
+        background-color: #000;
+        color: #fff;
+        padding: 0.5rem 4rem;
+        text-align: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .main-content {
+        padding: 0 2rem 1.5rem;
+      }
+
+      .signature {
+        width: 90%;
+        text-align: left;
+        margin: 1rem auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .cst-sign {
+        border-top: 1px solid #000;
+        padding-top: 4px;
+        font-weight: 600;
+        width: 160px;
+        text-align: center;
+      }
+
+      .signature img {
+        max-width: 180px;
+        max-height: 80px;
+        object-fit: contain;
+        display: block;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 0.6rem;
+        font-size: 14px;
+        word-wrap: break-word;
+        text-align: center;
+      }
+
+      th.desc,
+      td.desc {
+        text-align: left;
+        width: 50%;
+      }
+
+      th.sn,
+      td.sn {
+        width: 5%;
+        white-space: nowrap;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .terms {
+        font-size: 12px;
+        color: red;
+        text-align: left !important;
+      }
+
+      .bold {
+        font-weight: 600;
+      }
+
+      .normal {
+        font-weight: 400;
+      }
+
+      .account-info {
+        text-align: left !important;
+        width: 100%;
+        padding: 0.6rem;
+      }
+
+      .account-info p {
+        margin: 4px 0;
+        line-height: 1.5;
+      }
+
+      .bottom {
+        width: 100%;
+        background: #fff;
+        margin-top: auto;
+        padding-bottom: 1rem;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+
+        main {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .main-content {
+          flex: 1;
+        }
+
+        .bottom {
+          margin-top: auto;
+        }
+
+        @page {
+          size: A4;
+          margin: 5mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="top">
+        <hr />
+      </div>
+
+      <div class="header">
+        <img src="../images/2Ventures-logo.png" alt="2Ventures Logo" />
+      </div>
+
+      <br />
+
+      <div class="main-content">
+        <div class="sub-header">
+          <div>
+            <p class="bold">To:</p>
+            <p>
+              {{TO_NAME}},<br />
+              {{TO_ADDRESS}}
+            </p>
+          </div>
+
+          <div>
+            <h4 class="service">INVOICE</h4>
+          </div>
+
+          <div>
+            <p class="bold">
+              Invoice No: <span class="normal">{{INVOICE_NO}}</span>
+            </p>
+            <p class="bold">Date: <span class="normal">{{INVOICE_DATE}}</span></p>
+            <p class="bold">LPO No: <span class="normal">{{LPO_NO}}</span></p>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th class="sn">S/N</th>
+                <th class="desc">Description</th>
+                <th>Rate (₦)</th>
+                <th>Amount (₦)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ROWS_HTML}}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" class="center terms">
+                  Goods sold in good condition are not returnable. No refund
+                  after payment. Thank you for your patronage.
+                </td>
+                <td class="center bold">Total</td>
+                <td class="center">₦{{TOTAL_VALUE}}</td>
+              </tr>
+              <tr>
+                <td colspan="4" class="account-info">
+                  <p><strong>Bank Name:</strong> {{BANK_NAME}}</p>
+                  <p><strong>Account Name:</strong> {{ACCOUNT_NAME}}</p>
+                  <p><strong>Account No:</strong> {{ACCOUNT_NUMBER}}</p>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="signature">
+          <div>
+            <p class="cst-sign">Customer Signature</p>
+          </div>
+          <div>
+            <img
+              src="../images/signature-2-venture-invoice.png"
+              alt="Signature"
+            />
+          </div>
+        </div>
+        <hr />
+      </div>
+    </main>
+  </body>
+</html>
