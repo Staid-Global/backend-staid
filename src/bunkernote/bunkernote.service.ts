@@ -20,8 +20,7 @@ import { Company } from 'src/company/entities/company.entity';
 import { MailjetService } from 'src/Email/mailjet';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import puppeteer from 'puppeteer';
-import { getPuppeteerLaunchOptions } from 'src/utils/puppeteer.util';
+import { launchPuppeteerBrowser } from 'src/utils/puppeteer.util';
 const baseUrl = 'https://staid-redesigned.vercel.app/view';
 // const baseUrl ='https://staidgloballtd.com/view'
 
@@ -421,7 +420,7 @@ export class BunkernoteService {
 
   async generatePdf(data: any): Promise<Buffer> {
     const html = await this.compileBunkernoteTemplate(data);
-    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+    const browser = await launchPuppeteerBrowser();
 
     try {
       const page = await browser.newPage();

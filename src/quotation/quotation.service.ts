@@ -18,8 +18,7 @@ import { MailjetService } from 'src/Email/mailjet';
 import { Company } from 'src/company/entities/company.entity';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import puppeteer from 'puppeteer';
-import { getPuppeteerLaunchOptions } from 'src/utils/puppeteer.util';
+import { launchPuppeteerBrowser } from 'src/utils/puppeteer.util';
 
 const baseUrl = 'https://staid-redesigned.vercel.app/view';
 // const baseUrl ='https://staidgloballtd.com/view'
@@ -553,7 +552,7 @@ export class QuotationService {
   }
 
   private async renderQuotationTemplateToPdf(html: string): Promise<Buffer> {
-    const browser = await puppeteer.launch(getPuppeteerLaunchOptions());
+    const browser = await launchPuppeteerBrowser();
 
     try {
       const page = await browser.newPage();
