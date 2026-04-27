@@ -13,11 +13,14 @@ import {
   SendEmailDTOOOOOO,
 } from 'src/utils/utils.types';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from 'src/users/entities/user.entity';
 import { Bunkernote } from './entities/bunkernote.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { MailjetService } from 'src/Email/mailjet';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import puppeteer from 'puppeteer';
 const baseUrl = 'https://staid-redesigned.vercel.app/view';
 // const baseUrl ='https://staidgloballtd.com/view'
 
@@ -273,10 +276,179 @@ export class BunkernoteService {
     }
   }
 
-    async sendBunkernoteEmail(payload) {
-    const bunkernote = await this.bunkerModel.findOne({
-      _id: payload.hashedId,
+  async getDataById(id: string): Promise<any> {
+    const lookupQuery = Types.ObjectId.isValid(id)
+      ? { $or: [{ _id: id }, { hashed_id: id }] }
+      : { hashed_id: id };
+
+    const data = await this.bunkerModel
+      .findOne(lookupQuery)
+      .populate([{ path: 'added_by' }, { path: 'edited_by' }])
+      .lean();
+
+    if (!data) {
+      throw new NotFoundException(`Bunkernote not found`);
+    }
+
+    return data;
+  }
+
+  private formatDisplayDate(input: any): string {
+    if (!input) {
+      return '-';
+    }
+    const date = new Date(input);
+    if (Number.isNaN(date.getTime())) {
+      return String(input);
+    }
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
     });
+  }
+
+  private buildBunkernoteDuration(start: string, finish: string): string {
+    if (!start || !finish) {
+      return '-';
+    }
+    const startMinutes = this.parseTimeToMinutes(start);
+    const finishMinutes = this.parseTimeToMinutes(finish);
+    if (startMinutes === null || finishMinutes === null) {
+      return '-';
+    }
+    const diff = Math.max(finishMinutes - startMinutes, 0);
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+    return `${hours}h ${minutes}m`;
+  }
+
+  private parseTimeToMinutes(value: string): number | null {
+    const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      return null;
+    }
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+    return hours * 60 + minutes;
+  }
+
+  private getMimeTypeForImage(fileName: string): string {
+    const normalized = fileName.toLowerCase();
+    if (normalized.endsWith('.png')) {
+      return 'image/png';
+    }
+    if (normalized.endsWith('.jpg') || normalized.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
+    if (normalized.endsWith('.svg')) {
+      return 'image/svg+xml';
+    }
+    return 'application/octet-stream';
+  }
+
+  private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
+    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const fileBuffer = await readFile(imagePath);
+    const mimeType = this.getMimeTypeForImage(imageFile);
+    return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+  }
+
+  private async compileBunkernoteTemplate(bunkernote: any): Promise<string> {
+    const templatePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'bunkernote',
+      '2ventures.html',
+    );
+    const template = await readFile(templatePath, 'utf8');
+    const sellerCompany =
+      bunkernote?.seller && Types.ObjectId.isValid(String(bunkernote.seller))
+        ? await this.companyModel.findById(String(bunkernote.seller)).lean()
+        : null;
+    const sellerDisplayName =
+      sellerCompany?.name || String(bunkernote?.seller || 'Seller');
+    const placeholders: Record<string, string> = {
+      BUNKER_NO: String(bunkernote?.bunker_id ?? '-'),
+      STATUS: String(bunkernote?.status ?? '-'),
+      VESSEL_NAME: String(bunkernote?.vessel_name ?? '-'),
+      PORT: String(bunkernote?.port ?? '-'),
+      SELLER_NAME: sellerDisplayName,
+      DELIVERY: String(bunkernote?.delivery ?? '-'),
+      DATE_OF_COMMENCEMENT: this.formatDisplayDate(bunkernote?.dateOfCommencement),
+      PRODUCT: String(bunkernote?.product ?? '-'),
+      QUANTITY: String(bunkernote?.quantity ?? '-'),
+      START_PUMPING: String(bunkernote?.start_pumping ?? '-'),
+      FINISH_PUMPING: String(bunkernote?.finish_pumping ?? '-'),
+      DURATION: this.buildBunkernoteDuration(
+        String(bunkernote?.start_pumping ?? ''),
+        String(bunkernote?.finish_pumping ?? ''),
+      ),
+      DENSITY: String(bunkernote?.density ?? '-'),
+      FLASHPOINT: String(bunkernote?.flashpoint ?? '-'),
+      SULPHUR: String(bunkernote?.sulphur ?? '-'),
+      DISCLAIMER_NOTE: String(
+        bunkernote?.disclaimer_note ||
+          'All details are subject to verification by receiving vessel.',
+      ),
+    };
+
+    let html = template;
+    Object.entries(placeholders).forEach(([key, value]) => {
+      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+    });
+
+    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'signature-2-ventures.png',
+    );
+
+    return html
+      .replace('../images/2Ventures-logo.png', logoDataUri)
+      .replace('../images/signature-2-ventures.png', signatureDataUri);
+  }
+
+  async generatePdf(data: any): Promise<Buffer> {
+    const html = await this.compileBunkernoteTemplate(data);
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdfBytes = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+      });
+      return Buffer.from(pdfBytes);
+    } finally {
+      await browser.close();
+    }
+  }
+
+  private async buildBunkernoteEmailHtml(
+    payload: SendEmailDTOOOOOO,
+  ): Promise<string> {
+    const lookupQuery = Types.ObjectId.isValid(payload.hashedId)
+      ? { $or: [{ _id: payload.hashedId }, { hashed_id: payload.hashedId }] }
+      : { hashed_id: payload.hashedId };
+    const bunkernote = await this.bunkerModel.findOne(lookupQuery);
+    if (!bunkernote) {
+      throw new NotFoundException('Bunkernote not found');
+    }
     // const co = await this.companyModel.findById(bunkernote.seller);
     // if (!co) {
     //   throw new NotFoundException('Company not found');
@@ -391,7 +563,41 @@ export class BunkernoteService {
     if (!body.trim()) {
       throw new Error(`No email template found for bunkernote`);
     }
+    return body;
+  }
+
+  async sendBunkernoteEmail(payload: SendEmailDTOOOOOO) {
+    const body = await this.buildBunkernoteEmailHtml(payload);
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email);
+  }
+
+  async sendBunkernoteEmailWithPdfAttachment(
+    payload: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    const lookupQuery = Types.ObjectId.isValid(payload.hashedId)
+      ? { $or: [{ _id: payload.hashedId }, { hashed_id: payload.hashedId }] }
+      : { hashed_id: payload.hashedId };
+    const bunkernote = await this.bunkerModel.findOne(lookupQuery);
+    if (!bunkernote) {
+      throw new NotFoundException('Bunkernote not found');
+    }
+
+    const pdfBuffer = await this.generatePdf(bunkernote.toObject());
+    const body = await this.buildBunkernoteEmailHtml(payload);
+
+    await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
+      {
+        ContentType: 'application/pdf',
+        Filename: `bunkernote-${payload.hashedId}.pdf`,
+        Base64Content: pdfBuffer.toString('base64'),
+      },
+    ]);
+
+    return {
+      message: 'Bunker Note Email Sent with PDF Attachment',
+      success: true,
+      code: HttpStatus.OK,
+    };
   }
 
 

@@ -45,6 +45,11 @@ export class MailjetService {
     htmlContent: string,
     subject: string,
     recipientEmails: string[],
+    attachments?: Array<{
+      ContentType: string;
+      Filename: string;
+      Base64Content: string;
+    }>,
   ): Promise<void> {
     try {
       if (
@@ -66,6 +71,7 @@ export class MailjetService {
             })),
             Subject: subject,
             HTMLPart: htmlContent,
+            ...(attachments?.length ? { Attachments: attachments } : {}),
           },
         ],
       });

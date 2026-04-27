@@ -139,29 +139,30 @@ export class InvoiceController {
   //   });
   // }
 
-  @Get('pdf/:id')
-  async getQuotationMetadata(@Param('id') id: string) {
+  @Get('pdf/:id/download')
+  @ApiOperation({ summary: 'Download invoice PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Invoice PDF downloaded' })
+  async downloadInvoicePdf(@Param('id') id: string): Promise<StreamableFile> {
     const data = await this.invoiceService.getDataById(id);
+    const pdfBuffer = await this.invoiceService.generatePdf(data);
+    const reference = `invoice-${Date.now()}`;
 
-    async function generateUniqueNumber(length = 4): Promise<string> {
-      let result = '';
-      const digits = '0123456789';
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename=${reference}.pdf`,
+    });
+  }
 
-      for (let i = 0; i < length; i++) {
-        result += digits.charAt(Math.floor(Math.random() * digits.length));
-      }
-
-      return result;
-    }
-
-    const uniqueNumber = await generateUniqueNumber();
-
-    return {
-      quotationId: id,
-      reference: `invoice-${uniqueNumber}`,
-      metadata: data,
-      generatedAt: new Date().toISOString(),
-    };
+  @Get('pdf/:id/preview')
+  @ApiOperation({ summary: 'Preview invoice PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Invoice PDF previewed' })
+  async previewInvoicePdf(@Param('id') id: string): Promise<StreamableFile> {
+    const data = await this.invoiceService.getDataById(id);
+    const pdfBuffer = await this.invoiceService.generatePdf(data);
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `inline; filename=invoice-${id}.pdf`,
+    });
   }
 
     @Post('send/email')
@@ -174,5 +175,18 @@ export class InvoiceController {
     async sendInvoiceEmail(@Body() dto: SendEmailDTOOOOOO): Promise<BaseResponseTypeDTO> {
       return this.invoiceService.sendInvoiceEmaill(dto);
     }
+
+  @Post('send/email/with-attachment')
+  @ApiOperation({ summary: 'Send invoice email with PDF attachment' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email with PDF sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendInvoiceEmailWithAttachment(
+    @Body() dto: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    return this.invoiceService.sendInvoiceEmailWithPdfAttachment(dto);
+  }
   
 }

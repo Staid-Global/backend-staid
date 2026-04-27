@@ -10,7 +10,6 @@ import {
   HttpStatus,
   Request,
   Query,
-  Res,
   StreamableFile,
 } from '@nestjs/common';
 import { QuotationService } from './quotation.service';
@@ -154,29 +153,30 @@ export class QuotationController {
   //   });
   // }
 
-  @Get('pdf/:id')
-  async getQuotationMetadata(@Param('id') id: string) {
+  @Get('pdf/:id/download')
+  @ApiOperation({ summary: 'Download quotation PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Quotation PDF downloaded' })
+  async downloadQuotationPdf(@Param('id') id: string): Promise<StreamableFile> {
     const data = await this.quotationService.getDataById(id);
+    const pdfBuffer = await this.quotationService.generatePdf(data);
+    const reference = `quotation-${Date.now()}`;
 
-    async function generateUniqueNumber(length = 4): Promise<string> {
-      let result = '';
-      const digits = '0123456789';
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename=${reference}.pdf`,
+    });
+  }
 
-      for (let i = 0; i < length; i++) {
-        result += digits.charAt(Math.floor(Math.random() * digits.length));
-      }
-
-      return result;
-    }
-
-    const uniqueNumber = await generateUniqueNumber();
-
-    return {
-      quotationId: id,
-      reference: `quotation-${uniqueNumber}`,
-      metadata: data,
-      generatedAt: new Date().toISOString(),
-    };
+  @Get('pdf/:id/preview')
+  @ApiOperation({ summary: 'Preview quotation PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Quotation PDF previewed' })
+  async previewQuotationPdf(@Param('id') id: string): Promise<StreamableFile> {
+    const data = await this.quotationService.getDataById(id);
+    const pdfBuffer = await this.quotationService.generatePdf(data);
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `inline; filename=quotation-${id}.pdf`,
+    });
   }
 
   @Post('/email-quote')
@@ -188,5 +188,18 @@ export class QuotationController {
   })
   async sendQuotationEmail(@Body() dto: SendEmailDTOOOOOO): Promise<BaseResponseTypeDTO> {
     return this.quotationService.sendQuotationEmaill(dto);
+  }
+
+  @Post('/email-quote-with-attachment')
+  @ApiOperation({ summary: 'Send quotation email with PDF attachment' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email with PDF sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendQuotationEmailWithAttachment(
+    @Body() dto: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    return this.quotationService.sendQuotationEmailWithPdfAttachment(dto);
   }
 }

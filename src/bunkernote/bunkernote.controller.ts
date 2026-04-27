@@ -13,6 +13,7 @@ import {
   HttpStatus,
   Request,
   Query,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -113,6 +114,32 @@ export class BunkernoteController {
     return this.bunkernoteService.deleteABunker(req.user.id, id);
   }
 
+  @Get('pdf/:id/download')
+  @ApiOperation({ summary: 'Download bunkernote PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Bunkernote PDF downloaded' })
+  async downloadBunkernotePdf(@Param('id') id: string): Promise<StreamableFile> {
+    const data = await this.bunkernoteService.getDataById(id);
+    const pdfBuffer = await this.bunkernoteService.generatePdf(data);
+    const reference = `bunkernote-${Date.now()}`;
+
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename=${reference}.pdf`,
+    });
+  }
+
+  @Get('pdf/:id/preview')
+  @ApiOperation({ summary: 'Preview bunkernote PDF' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Bunkernote PDF previewed' })
+  async previewBunkernotePdf(@Param('id') id: string): Promise<StreamableFile> {
+    const data = await this.bunkernoteService.getDataById(id);
+    const pdfBuffer = await this.bunkernoteService.generatePdf(data);
+    return new StreamableFile(pdfBuffer, {
+      type: 'application/pdf',
+      disposition: `inline; filename=bunkernote-${id}.pdf`,
+    });
+  }
+
   @Post('send/email')
   @ApiOperation({ summary: 'Send bunker-note email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
@@ -124,5 +151,18 @@ export class BunkernoteController {
     @Body() dto: SendEmailDTOOOOOO,
   ): Promise<BaseResponseTypeDTO> {
     return this.bunkernoteService.sendBunkernoteEmaill(dto);
+  }
+
+  @Post('send/email/with-attachment')
+  @ApiOperation({ summary: 'Send bunkernote email with PDF attachment' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email with PDF sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async sendBunkernoteEmailWithAttachment(
+    @Body() dto: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    return this.bunkernoteService.sendBunkernoteEmailWithPdfAttachment(dto);
   }
 }

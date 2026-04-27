@@ -19,6 +19,9 @@ import { Waybill } from './entities/waybill.entity';
 import * as PDFDocument from 'pdfkit';
 import { MailjetService } from 'src/Email/mailjet';
 import { Company } from 'src/company/entities/company.entity';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import puppeteer from 'puppeteer';
 const baseUrl = 'https://staid-redesigned.vercel.app/view';
 // const baseUrl ='https://staidgloballtd.com/view'
 
@@ -302,6 +305,16 @@ export class WaybillService {
   }
 
   async generatePdf(data: any): Promise<Buffer> {
+    if (data?.category === 'rail-road-track') {
+      return this.generateRailRoadWaybillPdf(data);
+    }
+    if (data?.category === 'staid-global') {
+      return this.generateStaidGlobalWaybillPdf(data);
+    }
+    if (data?.category === 'two-ventures') {
+      return this.generateTwoVenturesWaybillPdf(data);
+    }
+
     return new Promise((resolve) => {
       const doc = new PDFDocument();
       const chunks: any[] = [];
@@ -328,6 +341,260 @@ export class WaybillService {
 
       doc.end();
     });
+  }
+
+  private toNumber(value: unknown): number {
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : 0;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.replace(/[^0-9.-]/g, '');
+      const parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    return 0;
+  }
+
+  private getMimeTypeForImage(fileName: string): string {
+    const normalized = fileName.toLowerCase();
+    if (normalized.endsWith('.png')) {
+      return 'image/png';
+    }
+    if (normalized.endsWith('.jpg') || normalized.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
+    if (normalized.endsWith('.svg')) {
+      return 'image/svg+xml';
+    }
+    if (normalized.endsWith('.webp')) {
+      return 'image/webp';
+    }
+    return 'application/octet-stream';
+  }
+
+  private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
+    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const fileBuffer = await readFile(imagePath);
+    const mimeType = this.getMimeTypeForImage(imageFile);
+    return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+  }
+
+  private buildRailRoadWaybillRows(items: any[] = []): string {
+    if (!Array.isArray(items) || items.length === 0) {
+      return `
+        <tr>
+          <td class="data-cell sn">1</td>
+          <td class="data-cell description-cell">No waybill items</td>
+        </tr>
+      `;
+    }
+
+    return items
+      .map((item, index) => {
+        const description = String(item?.description || '-');
+        return `
+          <tr>
+            <td class="data-cell sn">${index + 1}</td>
+            <td class="data-cell description-cell">${description}</td>
+          </tr>
+          <tr class="spacer"><td colspan="2"></td></tr>
+        `;
+      })
+      .join('');
+  }
+
+  private buildGenericWaybillRows(items: any[] = []): string {
+    if (!Array.isArray(items) || items.length === 0) {
+      return `
+        <tr>
+          <td>1</td>
+          <td class="description">No waybill items</td>
+        </tr>
+      `;
+    }
+
+    return items
+      .map((item, index) => {
+        const description = String(item?.description || '-');
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td class="description">${description}</td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  private getRailRoadWaybillTemplateData(waybill: any) {
+    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const day = `${createdAt.getDate()}`.padStart(2, '0');
+    const month = createdAt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const year = `${createdAt.getFullYear()}`;
+
+    return {
+      TO_NAME: waybill?.company?.name || 'Customer',
+      TO_ADDRESS: waybill?.company?.address || '-',
+      DATE_DAY: day,
+      DATE_MONTH: month,
+      DATE_YEAR: year,
+      ROWS_HTML: this.buildRailRoadWaybillRows(waybill?.items || []),
+    };
+  }
+
+  private getStaidGlobalWaybillTemplateData(waybill: any) {
+    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const waybillDate = createdAt.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    return {
+      TO_NAME: waybill?.company?.name || 'Customer',
+      TO_ADDRESS: waybill?.company?.address || '-',
+      WAYBILL_NO: waybill?.way_id || '-',
+      WAYBILL_DATE: waybillDate.toUpperCase(),
+      LPO_NO: waybill?.lpo || '-',
+      ROWS_HTML: this.buildGenericWaybillRows(waybill?.items || []),
+    };
+  }
+
+  private getTwoVenturesWaybillTemplateData(waybill: any) {
+    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const waybillDate = createdAt.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    return {
+      TO_NAME: waybill?.company?.name || 'Customer',
+      TO_ADDRESS: waybill?.company?.address || '-',
+      WAYBILL_NO: waybill?.way_id || '-',
+      WAYBILL_DATE: waybillDate.toUpperCase(),
+      LPO_NO: waybill?.lpo || '-',
+      ROWS_HTML: this.buildGenericWaybillRows(waybill?.items || []),
+    };
+  }
+
+  private async compileRailRoadWaybillTemplate(
+    template: string,
+    waybill: any,
+  ): Promise<string> {
+    const placeholders = this.getRailRoadWaybillTemplateData(waybill);
+    let html = template;
+
+    Object.entries(placeholders).forEach(([key, value]) => {
+      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+    });
+
+    const logoDataUri = await this.buildTemplateAssetDataUri('Rail-road.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'signature-rail-road-track.png',
+    );
+
+    return html
+      .replace('../images/Rail-road.png', logoDataUri)
+      .replace('../images/signature-rail-road-track.png', signatureDataUri);
+  }
+
+  private async compileStaidGlobalWaybillTemplate(
+    template: string,
+    waybill: any,
+  ): Promise<string> {
+    const placeholders = this.getStaidGlobalWaybillTemplateData(waybill);
+    let html = template;
+
+    Object.entries(placeholders).forEach(([key, value]) => {
+      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+    });
+
+    const logoDataUri = await this.buildTemplateAssetDataUri('StaidLogo.svg');
+    const signatureDataUri = await this.buildTemplateAssetDataUri('staid-signature.png');
+
+    return html
+      .replace('../images/StaidLogo.svg', logoDataUri)
+      .replace('../images/staid-signature.png', signatureDataUri);
+  }
+
+  private async compileTwoVenturesWaybillTemplate(
+    template: string,
+    waybill: any,
+  ): Promise<string> {
+    const placeholders = this.getTwoVenturesWaybillTemplateData(waybill);
+    let html = template;
+
+    Object.entries(placeholders).forEach(([key, value]) => {
+      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+    });
+
+    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'signature-2-ventures.png',
+    );
+
+    return html
+      .replace('../images/2Ventures-logo.png', logoDataUri)
+      .replace('../images/signature-2-ventures.png', signatureDataUri);
+  }
+
+  private async renderWaybillTemplateToPdf(html: string): Promise<Buffer> {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 800, height: 1120, deviceScaleFactor: 1 });
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.emulateMediaType('print');
+      const pdfBytes = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+      });
+      return Buffer.from(pdfBytes);
+    } finally {
+      await browser.close();
+    }
+  }
+
+  private async generateRailRoadWaybillPdf(waybill: any): Promise<Buffer> {
+    const templatePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'waybill',
+      'rail-road.html',
+    );
+    const template = await readFile(templatePath, 'utf8');
+    const html = await this.compileRailRoadWaybillTemplate(template, waybill);
+    return this.renderWaybillTemplateToPdf(html);
+  }
+
+  private async generateStaidGlobalWaybillPdf(waybill: any): Promise<Buffer> {
+    const templatePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'waybill',
+      'staid-global.html',
+    );
+    const template = await readFile(templatePath, 'utf8');
+    const html = await this.compileStaidGlobalWaybillTemplate(template, waybill);
+    return this.renderWaybillTemplateToPdf(html);
+  }
+
+  private async generateTwoVenturesWaybillPdf(waybill: any): Promise<Buffer> {
+    const templatePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'waybill',
+      '2-ventures.html',
+    );
+    const template = await readFile(templatePath, 'utf8');
+    const html = await this.compileTwoVenturesWaybillTemplate(template, waybill);
+    return this.renderWaybillTemplateToPdf(html);
   }
 
   async sendWaybillEmail(payload) {
@@ -664,6 +931,100 @@ export class WaybillService {
       );
     }
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email);
+  }
+
+  async sendWaybillEmailWithPdfAttachment(
+    payload: SendEmailDTOOOOOO,
+  ): Promise<BaseResponseTypeDTO> {
+    const waybillData = await this.getDataById(payload.hashedId);
+    const pdfBuffer = await this.generatePdf(waybillData);
+
+    let body = '';
+    const waybill = await this.waybillModel.findOne({
+      hashed_id: payload.hashedId,
+    });
+    const company = await this.companyModel.findById(waybill.company);
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    if (waybill.category === 'rail-road-track') {
+      body = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Staid Email Template</title>
+      </head>
+      <body>
+        <div>
+          <p>Dear ${company.name},</p>
+          <p>${payload.body}</p>
+          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+        </div>
+      </body>
+    </html>
+    `;
+    }
+
+    if (waybill.category === 'staid-global') {
+      body = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Staid Email Template</title>
+      </head>
+      <body>
+        <div>
+          <p>Dear ${company.name},</p>
+          <p>${payload.body}</p>
+          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+        </div>
+      </body>
+    </html>
+    `;
+    }
+
+    if (waybill.category === 'two-ventures') {
+      body = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Staid Email Template</title>
+      </head>
+      <body>
+        <div>
+          <p>Dear ${company.name},</p>
+          <p>${payload.body}</p>
+          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+        </div>
+      </body>
+    </html>
+    `;
+    }
+
+    if (!body.trim()) {
+      throw new Error(`No email template found for category: ${waybill.category}`);
+    }
+
+    await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
+      {
+        ContentType: 'application/pdf',
+        Filename: `waybill-${payload.hashedId}.pdf`,
+        Base64Content: pdfBuffer.toString('base64'),
+      },
+    ]);
+
+    return {
+      message: 'Waybill Email Sent with PDF Attachment',
+      success: true,
+      code: HttpStatus.OK,
+    };
   }
 
   async sendWaybillEmaill(
