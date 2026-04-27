@@ -1,4 +1,5 @@
 import puppeteer, { LaunchOptions } from 'puppeteer';
+import { existsSync } from 'fs';
 
 const DEFAULT_CHROME_PATHS = [
   '/usr/bin/google-chrome-stable',
@@ -9,18 +10,25 @@ const DEFAULT_CHROME_PATHS = [
 
 export function getPuppeteerLaunchOptions(): LaunchOptions {
   const configuredPath = process.env.PUPPETEER_EXECUTABLE_PATH?.trim();
-  let executablePath = configuredPath || '';
+  let executablePath = '';
+
+  if (configuredPath && existsSync(configuredPath)) {
+    executablePath = configuredPath;
+  }
 
   if (!executablePath) {
     try {
-      executablePath = puppeteer.executablePath();
+      const detectedPath = puppeteer.executablePath();
+      if (detectedPath && existsSync(detectedPath)) {
+        executablePath = detectedPath;
+      }
     } catch {
-      executablePath = '';
+      // Ignore and continue to fallback paths
     }
   }
 
   if (!executablePath) {
-    executablePath = DEFAULT_CHROME_PATHS.find(Boolean) || '';
+    executablePath = DEFAULT_CHROME_PATHS.find((path) => existsSync(path)) || '';
   }
 
   const options: LaunchOptions = {
