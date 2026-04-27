@@ -20,7 +20,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { launchPuppeteerBrowser } from 'src/utils/puppeteer.util';
 
-const baseUrl = 'https://staid-redesigned.vercel.app/view';
+const baseUrl = process.env.BASE_URL + '/view';
 // const baseUrl ='https://staidgloballtd.com/view'
 @Injectable()
 export class QuotationService {

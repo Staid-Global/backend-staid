@@ -15,7 +15,7 @@ import { Waybill } from 'src/waybill/entities/waybill.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { Quotation } from 'src/quotation/entities/quotation.entity';
 dotenv.config();
-const baseUrl = 'https://staid-redesigned.vercel.app/view';
+const baseUrl = process.env.BASE_URL + '/view';
 // const baseUrl ='https://staidgloballtd.com/view'
 
 @Injectable()
