@@ -545,7 +545,7 @@ export class WaybillService {
     try {
       const page = await browser.newPage();
       await page.setViewport({ width: 800, height: 1120, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.emulateMediaType('print');
       const pdfBytes = await page.pdf({
         format: 'A4',
