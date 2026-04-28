@@ -959,7 +959,7 @@ export class WaybillService {
         <div>
           <p>Dear ${company.name},</p>
           <p>${payload.body}</p>
-          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+          <p>Please find attached the waybill document.</p>
         </div>
       </body>
     </html>
@@ -979,7 +979,7 @@ export class WaybillService {
         <div>
           <p>Dear ${company.name},</p>
           <p>${payload.body}</p>
-          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+          <p>Please find attached the waybill document.</p>
         </div>
       </body>
     </html>
@@ -999,7 +999,7 @@ export class WaybillService {
         <div>
           <p>Dear ${company.name},</p>
           <p>${payload.body}</p>
-          <p><a href="${baseUrl}/waybill/${payload.hashedId}">View Document</a></p>
+          <p>Please find attached the waybill document.</p>
         </div>
       </body>
     </html>
@@ -1013,7 +1013,7 @@ export class WaybillService {
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
       {
         ContentType: 'application/pdf',
-        Filename: `waybill-${payload.hashedId}.pdf`,
+        Filename: `waybill-${waybillData.lpo}.pdf`,
         Base64Content: pdfBuffer.toString('base64'),
       },
     ]);

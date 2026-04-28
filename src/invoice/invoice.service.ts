@@ -457,14 +457,8 @@ export class InvoiceService {
 
             <p>${payload.body}</p>
 
-            <p>Kindly click the button below to view your document securely.</p>
+            <p>Please find attached the invoice document.</p>
 
-            <p style="text-align: center">
-              <a href="${baseUrl}/invoice/${payload.hashedId}" class="btn">View Document</a>
-            </p>
-
-            <br />
-            <br />
             <p>Best regards,</p>
             <p>
               <strong>Oluwole Olaleye</strong><br />
@@ -563,14 +557,8 @@ export class InvoiceService {
 
         <p>${payload.body}</p>
 
-        <p>Kindly click the button below to view your document securely.</p>
+        <p>Please find attached the invoice document.</p>
 
-        <p style="text-align: center">
-          <a href="${baseUrl}/invoice/${payload.hashedId}" class="btn">View Document</a>
-        </p>
-
-        <br />
-        <br />
         <p>Best regards,</p>
         <p>
           <strong>Oluwole Olaleye</strong><br />
@@ -671,14 +659,8 @@ export class InvoiceService {
 
       <p>${payload.body}</p>
 
-        <p>Kindly click the button below to view your document securely.</p>
+        <p>Please find attached the invoice document.</p>
 
-        <p style="text-align: center">
-          <a href="${baseUrl}/invoice/${payload.hashedId}" class="btn">View Document</a>
-        </p>
-
-        <br />
-        <br />
         <p>Best regards,</p>
         <p>
           <strong>Oluwole Olaleye</strong><br />
@@ -727,7 +709,7 @@ s
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
       {
         ContentType: 'application/pdf',
-        Filename: `invoice-${payload.hashedId}.pdf`,
+        Filename: `invoice-${invoiceData.lpo}.pdf`,
         Base64Content: pdfBuffer.toString('base64'),
       },
     ]);
@@ -1047,9 +1029,9 @@ s
       DATE_MONTH: month,
       DATE_YEAR: year,
       ROWS_HTML: rowsHtml,
-      BANK_NAME: 'FCMB',
-      ACCOUNT_NAME: 'Rail Road Track Logistics',
-      ACCOUNT_NUMBER: '2004520343',
+      BANK_NAME: process.env.RAIL_ROAD_BANK_NAME,
+      ACCOUNT_NAME: process.env.RAIL_ROAD_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.RAIL_ROAD_ACCOUNT_NUMBER,
       TOTAL_VALUE: this.formatCurrency(grandTotal),
       AMOUNT_IN_WORDS: this.formatAmountWords(grandTotal).toUpperCase(),
     };
@@ -1089,9 +1071,9 @@ s
       LPO_NO: invoice?.lpo || '-',
       ROWS_HTML: rowsHtml,
       TOTAL_VALUE: this.formatCurrency(grandTotal),
-      BANK_NAME: 'UNITED BANK FOR AFRICA',
-      ACCOUNT_NAME: 'STAID GLOBAL LIMITED',
-      ACCOUNT_NUMBER: '1020877178',
+      BANK_NAME: process.env.STAID_GLOBAL_BANK_NAME,
+      ACCOUNT_NAME: process.env.STAID_GLOBAL_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.STAID_GLOBAL_ACCOUNT_NUMBER,
     };
   }
 
@@ -1129,9 +1111,9 @@ s
       LPO_NO: invoice?.lpo || '-',
       ROWS_HTML: rowsHtml,
       TOTAL_VALUE: this.formatCurrency(grandTotal),
-      BANK_NAME: 'UNITED BANK FOR AFRICA',
-      ACCOUNT_NAME: 'TWO VENTURES',
-      ACCOUNT_NUMBER: '1020877178',
+      BANK_NAME: process.env.TWO_VENTURES_BANK_NAME,
+      ACCOUNT_NAME: process.env.TWO_VENTURES_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.TWO_VENTURES_ACCOUNT_NUMBER,
     };
   }
 

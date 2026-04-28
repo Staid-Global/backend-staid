@@ -397,9 +397,9 @@ export class QuotationService {
         handlingCharge,
         vat,
       ),
-      BANK_NAME: 'FCMB',
-      ACCOUNT_NAME: 'Rail Road Track Logistics',
-      ACCOUNT_NUMBER: '2004520343',
+      BANK_NAME: process.env.RAIL_ROAD_BANK_NAME,
+      ACCOUNT_NAME: process.env.RAIL_ROAD_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.RAIL_ROAD_ACCOUNT_NUMBER,
       TOTAL_VALUE: this.formatCurrency(grandTotal),
       AMOUNT_IN_WORDS: this.formatAmountWords(grandTotal).toUpperCase(),
     };
@@ -438,9 +438,9 @@ export class QuotationService {
         vat,
       ),
       TOTAL_VALUE: this.formatCurrency(grandTotal),
-      BANK_NAME: 'UNITED BANK FOR AFRICA',
-      ACCOUNT_NAME: 'STAID GLOBAL LIMITED',
-      ACCOUNT_NUMBER: '1020877178',
+      BANK_NAME: process.env.STAID_GLOBAL_BANK_NAME,
+      ACCOUNT_NAME: process.env.STAID_GLOBAL_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.STAID_GLOBAL_ACCOUNT_NUMBER,
     };
   }
 
@@ -477,9 +477,9 @@ export class QuotationService {
         vat,
       ),
       TOTAL_VALUE: this.formatCurrency(grandTotal),
-      BANK_NAME: 'UNITED BANK FOR AFRICA',
-      ACCOUNT_NAME: 'TWO VENTURES',
-      ACCOUNT_NUMBER: '1020877178',
+      BANK_NAME: process.env.TWO_VENTURES_BANK_NAME,
+      ACCOUNT_NAME: process.env.TWO_VENTURES_ACCOUNT_NAME,
+      ACCOUNT_NUMBER: process.env.TWO_VENTURES_ACCOUNT_NUMBER,
     };
   }
 
@@ -1231,17 +1231,29 @@ s
 
     if (quotation.data.category === 'rail-road-track') {
       body = `
-      <!DOCTYPE html><html><body><p>Dear ${comp.name},</p><p>${payload.body}</p><p><a href="${baseUrl}/quotation/${payload.hashedId}">View Document</a></p></body></html>
+      <!DOCTYPE html><html><body>
+      <p>Dear ${comp.name},</p>
+      <p>${payload.body}</p>
+      <p>Please find attached the quotation document.</p>
+      </body></html>
       `;
     }
     if (quotation.data.category === 'staid-global') {
       body = `
-      <!DOCTYPE html><html><body><p>Dear ${comp.name},</p><p>${payload.body}</p><p><a href="${baseUrl}/quotation/${payload.hashedId}">View Document</a></p></body></html>
+      <!DOCTYPE html><html><body>
+      <p>Dear ${comp.name},</p>
+      <p>${payload.body}</p>
+      <p>Please find attached the quotation document.</p>
+      </body></html>
       `;
     }
     if (quotation.data.category === 'two-ventures') {
       body = `
-      <!DOCTYPE html><html><body><p>Dear ${comp.name},</p><p>${payload.body}</p><p><a href="${baseUrl}/quotation/${payload.hashedId}">View Document</a></p></body></html>
+      <!DOCTYPE html><html><body>
+      <p>Dear ${comp.name},</p>
+      <p>${payload.body}</p>
+      <p>Please find attached the quotation document.</p>
+      </body></html>
       `;
     }
 
@@ -1257,7 +1269,7 @@ s
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
       {
         ContentType: 'application/pdf',
-        Filename: `quotation-${payload.hashedId}.pdf`,
+        Filename: `quotation-${quotationData.quotation_id}.pdf`,
         Base64Content: pdfBuffer.toString('base64'),
       },
     ]);

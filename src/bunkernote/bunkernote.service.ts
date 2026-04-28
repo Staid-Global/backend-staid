@@ -524,14 +524,8 @@ export class BunkernoteService {
 
         <p>${payload.body}</p>
 
-        <p>Kindly click the button below to view your document securely.</p>
+        <p>Please find attached the bunker note document.</p>
 
-        <p style="text-align: center">
-          <a href="${baseUrl}/bunkernote/${payload.hashedId}" class="btn">View Document</a>
-        </p>
-
-        <br />
-        <br />
         <p>Best regards,</p>
         <p>
           <strong>Oluwole Olaleye</strong><br />
@@ -586,7 +580,7 @@ export class BunkernoteService {
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [
       {
         ContentType: 'application/pdf',
-        Filename: `bunkernote-${payload.hashedId}.pdf`,
+        Filename: `bunkernote-${bunkernote.bunker_id}.pdf`,
         Base64Content: pdfBuffer.toString('base64'),
       },
     ]);
