@@ -318,6 +318,7 @@ export class QuotationService {
     items: any[] = [],
     handlingCharge = 0,
     vat = 0,
+    omitZeroHandlingCharge = false,
   ): string {
     if (!Array.isArray(items) || items.length === 0) {
       return `
@@ -349,15 +350,23 @@ export class QuotationService {
       })
       .join('');
 
-    const extraRows = `
+    const showHandlingRow =
+      !omitZeroHandlingCharge || this.roundToTwo(handlingCharge) !== 0;
+    const handlingRowHtml = showHandlingRow
+      ? `
       <tr>
         <td>${items.length + 1}</td>
         <td class="description">Handling Charge</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
       </tr>
+    `
+      : '';
+    const vatRowNum = items.length + (showHandlingRow ? 2 : 1);
+    const extraRows = `
+      ${handlingRowHtml}
       <tr>
-        <td>${items.length + 2}</td>
+        <td>${vatRowNum}</td>
         <td class="description">VAT (7.5%)</td>
         <td>${this.formatCurrency(vat)}</td>
         <td>${this.formatCurrency(vat)}</td>
@@ -436,6 +445,7 @@ export class QuotationService {
         quotation?.items || [],
         handlingCharge,
         vat,
+        true,
       ),
       TOTAL_VALUE: this.formatCurrency(grandTotal),
       BANK_NAME: process.env.STAID_GLOBAL_BANK_NAME,
