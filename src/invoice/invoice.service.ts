@@ -946,11 +946,25 @@ s
       })
       .join('');
 
+    const showHandlingRow = this.roundToTwo(handlingCharge) !== 0;
     const showVatRow = this.shouldShowVatRow(vatRate);
+    const handlingRowHtml = showHandlingRow
+      ? `
+      <tr>
+        <td class="data-cell sn">${items.length + 1}</td>
+        <td class="data-cell">-</td>
+        <td class="data-cell description-cell">Handling Charge</td>
+        <td class="data-cell">${this.formatCurrencyWithSymbol(handlingCharge)}</td>
+        <td class="data-cell">${this.formatCurrencyWithSymbol(handlingCharge)}</td>
+      </tr>
+      <tr class="spacer"><td colspan="5"></td></tr>
+    `
+      : '';
+    const vatRowNum = items.length + (showHandlingRow ? 2 : 1);
     const vatRowHtml = showVatRow
       ? `
       <tr>
-        <td class="data-cell sn">${items.length + 2}</td>
+        <td class="data-cell sn">${vatRowNum}</td>
         <td class="data-cell">-</td>
         <td class="data-cell description-cell">VAT (${this.roundToTwo(vatRate)}%)</td>
         <td class="data-cell">${this.formatCurrencyWithSymbol(vatAmount)}</td>
@@ -961,14 +975,7 @@ s
       : '';
 
     const extraRows = `
-      <tr>
-        <td class="data-cell sn">${items.length + 1}</td>
-        <td class="data-cell">-</td>
-        <td class="data-cell description-cell">Handling Charge</td>
-        <td class="data-cell">${this.formatCurrencyWithSymbol(handlingCharge)}</td>
-        <td class="data-cell">${this.formatCurrencyWithSymbol(handlingCharge)}</td>
-      </tr>
-      <tr class="spacer"><td colspan="5"></td></tr>
+      ${handlingRowHtml}
       ${vatRowHtml}
     `;
 
@@ -1157,6 +1164,7 @@ s
       handlingCharge,
       vatAmount,
       vatRate,
+      true,
     );
 
     return {
