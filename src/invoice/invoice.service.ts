@@ -799,6 +799,31 @@ s
     return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
+  private getInvoiceVatRate(invoice: any): number {
+    const rawVat = this.toNumber(invoice?.vat);
+    const normalizedVat = this.roundToTwo(rawVat);
+
+    // Accept both VAT formats:
+    // - 40   => 40%
+    // - 0.4  => 40%
+    if (normalizedVat > 0 && normalizedVat < 1) {
+      return this.roundToTwo(normalizedVat * 100);
+    }
+
+    return normalizedVat;
+  }
+
+  private calculateVatAmount(subtotal: number, vatRate: number): number {
+    if (this.roundToTwo(vatRate) === 0) {
+      return 0;
+    }
+    return this.roundToTwo(subtotal * (vatRate / 100));
+  }
+
+  private shouldShowVatRow(vatRate: number): boolean {
+    return this.roundToTwo(vatRate) !== 0;
+  }
+
   private formatAmountWords(value: number): string {
     const amount = Number(value || 0);
     if (!Number.isFinite(amount)) {
@@ -886,7 +911,8 @@ s
   private buildRailRoadRows(
     items: any[] = [],
     handlingCharge = 0,
-    vat = 0,
+    vatAmount = 0,
+    vatRate = 0,
   ): string {
     if (!Array.isArray(items) || items.length === 0) {
       return `
@@ -920,6 +946,20 @@ s
       })
       .join('');
 
+    const showVatRow = this.shouldShowVatRow(vatRate);
+    const vatRowHtml = showVatRow
+      ? `
+      <tr>
+        <td class="data-cell sn">${items.length + 2}</td>
+        <td class="data-cell">-</td>
+        <td class="data-cell description-cell">VAT (${this.roundToTwo(vatRate)}%)</td>
+        <td class="data-cell">${this.formatCurrencyWithSymbol(vatAmount)}</td>
+        <td class="data-cell">${this.formatCurrencyWithSymbol(vatAmount)}</td>
+      </tr>
+      <tr class="spacer"><td colspan="5"></td></tr>
+    `
+      : '';
+
     const extraRows = `
       <tr>
         <td class="data-cell sn">${items.length + 1}</td>
@@ -929,14 +969,7 @@ s
         <td class="data-cell">${this.formatCurrencyWithSymbol(handlingCharge)}</td>
       </tr>
       <tr class="spacer"><td colspan="5"></td></tr>
-      <tr>
-        <td class="data-cell sn">${items.length + 2}</td>
-        <td class="data-cell">-</td>
-        <td class="data-cell description-cell">VAT (7.5%)</td>
-        <td class="data-cell">${this.formatCurrencyWithSymbol(vat)}</td>
-        <td class="data-cell">${this.formatCurrencyWithSymbol(vat)}</td>
-      </tr>
-      <tr class="spacer"><td colspan="5"></td></tr>
+      ${vatRowHtml}
     `;
 
     return `${itemRows}${extraRows}`;
@@ -945,7 +978,8 @@ s
   private buildStaidGlobalRows(
     items: any[] = [],
     handlingCharge = 0,
-    vat = 0,
+    vatAmount = 0,
+    vatRate = 0,
     omitZeroHandlingCharge = false,
   ): string {
     if (!Array.isArray(items) || items.length === 0) {
@@ -991,15 +1025,21 @@ s
       </tr>
     `
       : '';
+    const showVatRow = this.shouldShowVatRow(vatRate);
     const vatRowNum = items.length + (showHandlingRow ? 2 : 1);
-    const extraRows = `
-      ${handlingRowHtml}
+    const vatRowHtml = showVatRow
+      ? `
       <tr>
         <td>${vatRowNum}</td>
-        <td class="description">VAT (7.5%)</td>
-        <td>${this.formatCurrency(vat)}</td>
-        <td>${this.formatCurrency(vat)}</td>
+        <td class="description">VAT (${this.roundToTwo(vatRate)}%)</td>
+        <td>${this.formatCurrency(vatAmount)}</td>
+        <td>${this.formatCurrency(vatAmount)}</td>
       </tr>
+    `
+      : '';
+    const extraRows = `
+      ${handlingRowHtml}
+      ${vatRowHtml}
     `;
 
     return `${itemRows}${extraRows}`;
@@ -1023,12 +1063,14 @@ s
       : 0;
     const handlingCharge = this.toNumber(invoice?.handling_charge);
     const subtotalBeforeVat = this.roundToTwo(itemTotal + handlingCharge);
-    const vat = this.roundToTwo(subtotalBeforeVat * 0.075);
-    const grandTotal = this.roundToTwo(subtotalBeforeVat + vat);
+    const vatRate = this.getInvoiceVatRate(invoice);
+    const vatAmount = this.calculateVatAmount(subtotalBeforeVat, vatRate);
+    const grandTotal = this.roundToTwo(subtotalBeforeVat + vatAmount);
     const rowsHtml = this.buildRailRoadRows(
       invoice?.items || [],
       handlingCharge,
-      vat,
+      vatAmount,
+      vatRate,
     );
 
     return {
@@ -1064,12 +1106,14 @@ s
       : 0;
     const handlingCharge = this.toNumber(invoice?.handling_charge);
     const subtotalBeforeVat = this.roundToTwo(itemTotal + handlingCharge);
-    const vat = this.roundToTwo(subtotalBeforeVat * 0.075);
-    const grandTotal = this.roundToTwo(subtotalBeforeVat + vat);
+    const vatRate = this.getInvoiceVatRate(invoice);
+    const vatAmount = this.calculateVatAmount(subtotalBeforeVat, vatRate);
+    const grandTotal = this.roundToTwo(subtotalBeforeVat + vatAmount);
     const rowsHtml = this.buildStaidGlobalRows(
       invoice?.items || [],
       handlingCharge,
-      vat,
+      vatAmount,
+      vatRate,
       true,
     );
 
@@ -1105,12 +1149,14 @@ s
       : 0;
     const handlingCharge = this.toNumber(invoice?.handling_charge);
     const subtotalBeforeVat = this.roundToTwo(itemTotal + handlingCharge);
-    const vat = this.roundToTwo(subtotalBeforeVat * 0.075);
-    const grandTotal = this.roundToTwo(subtotalBeforeVat + vat);
+    const vatRate = this.getInvoiceVatRate(invoice);
+    const vatAmount = this.calculateVatAmount(subtotalBeforeVat, vatRate);
+    const grandTotal = this.roundToTwo(subtotalBeforeVat + vatAmount);
     const rowsHtml = this.buildStaidGlobalRows(
       invoice?.items || [],
       handlingCharge,
-      vat,
+      vatAmount,
+      vatRate,
     );
 
     return {
