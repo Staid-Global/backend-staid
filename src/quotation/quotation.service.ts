@@ -325,6 +325,7 @@ export class QuotationService {
         <tr>
           <td>1</td>
           <td class="description">No quotation items</td>
+          <td>0</td>
           <td>${this.formatCurrency(0)}</td>
           <td>${this.formatCurrency(0)}</td>
         </tr>
@@ -335,14 +336,13 @@ export class QuotationService {
       .map((item, index) => {
         const quantity = this.toNumber(item?.quantity);
         const rate = this.toNumber(item?.rate);
-        const total = this.toNumber(item?.total) || quantity * rate;
-        const baseDescription = String(item?.description || '-');
-        const description =
-          quantity > 0 ? `${baseDescription} (x${quantity})` : baseDescription;
+        const total = this.roundToTwo(quantity * rate);
+        const description = String(item?.description || '-');
         return `
           <tr>
             <td>${index + 1}</td>
             <td class="description">${description}</td>
+            <td>${quantity}</td>
             <td>${this.formatCurrency(rate)}</td>
             <td>${this.formatCurrency(total)}</td>
           </tr>
@@ -357,6 +357,7 @@ export class QuotationService {
       <tr>
         <td>${items.length + 1}</td>
         <td class="description">Handling Charge</td>
+        <td>-</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
       </tr>
@@ -368,6 +369,7 @@ export class QuotationService {
       <tr>
         <td>${vatRowNum}</td>
         <td class="description">VAT (7.5%)</td>
+        <td>-</td>
         <td>${this.formatCurrency(vat)}</td>
         <td>${this.formatCurrency(vat)}</td>
       </tr>
@@ -424,9 +426,7 @@ export class QuotationService {
     const itemTotal = Array.isArray(quotation?.items)
       ? quotation.items.reduce(
           (sum, item) =>
-            sum +
-            (this.toNumber(item?.total) ||
-              this.toNumber(item?.quantity) * this.toNumber(item?.rate)),
+            sum + this.toNumber(item?.quantity) * this.toNumber(item?.rate),
           0,
         )
       : 0;
@@ -464,9 +464,7 @@ export class QuotationService {
     const itemTotal = Array.isArray(quotation?.items)
       ? quotation.items.reduce(
           (sum, item) =>
-            sum +
-            (this.toNumber(item?.total) ||
-              this.toNumber(item?.quantity) * this.toNumber(item?.rate)),
+            sum + this.toNumber(item?.quantity) * this.toNumber(item?.rate),
           0,
         )
       : 0;

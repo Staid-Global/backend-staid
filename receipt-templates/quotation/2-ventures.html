@@ -135,7 +135,7 @@
       th.desc,
       td.desc {
         text-align: left;
-        width: 50%;
+        width: 40%;
       }
 
       th.sn,
@@ -241,7 +241,9 @@
             <p class="bold">
               Quotation No: <span class="normal">{{QUOTATION_NO}}</span>
             </p>
-            <p class="bold">Date: <span class="normal">{{QUOTATION_DATE}}</span></p>
+            <p class="bold">
+              Date: <span class="normal">{{QUOTATION_DATE}}</span>
+            </p>
             <p class="bold">LPO No: <span class="normal">{{LPO_NO}}</span></p>
           </div>
         </div>
@@ -254,6 +256,7 @@
               <tr>
                 <th class="sn">S/N</th>
                 <th class="desc">Description</th>
+                <th>Qty</th>
                 <th>Rate (₦)</th>
                 <th>Amount (₦)</th>
               </tr>
@@ -267,11 +270,11 @@
                   Goods sold in good condition are not returnable. No refund
                   after payment. Thank you for your patronage.
                 </td>
-                <td class="center bold">Total</td>
+                <td colspan="2" class="center bold">Total</td>
                 <td class="center">₦{{TOTAL_VALUE}}</td>
               </tr>
               <tr>
-                <td colspan="4" class="account-info">
+                <td colspan="5" class="account-info">
                   <p><strong>Bank Name:</strong> {{BANK_NAME}}</p>
                   <p><strong>Account Name:</strong> {{ACCOUNT_NAME}}</p>
                   <p><strong>Account No:</strong> {{ACCOUNT_NUMBER}}</p>

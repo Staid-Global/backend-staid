@@ -994,6 +994,7 @@ s
         <tr>
           <td>1</td>
           <td class="description">No invoice items</td>
+          <td>0</td>
           <td>${this.formatCurrency(0)}</td>
           <td>${this.formatCurrency(0)}</td>
         </tr>
@@ -1004,15 +1005,14 @@ s
       .map((item, index) => {
         const quantity = this.toNumber(item?.quantity);
         const rate = this.toNumber(item?.rate);
-        const total = this.toNumber(item?.total) || quantity * rate;
-        const baseDescription = String(item?.description || '-');
-        const description =
-          quantity > 0 ? `${baseDescription} (x${quantity})` : baseDescription;
+        const total = this.roundToTwo(quantity * rate);
+        const description = String(item?.description || '-');
 
         return `
           <tr>
             <td>${index + 1}</td>
             <td class="description">${description}</td>
+            <td>${quantity}</td>
             <td>${this.formatCurrency(rate)}</td>
             <td>${this.formatCurrency(total)}</td>
           </tr>
@@ -1027,6 +1027,7 @@ s
       <tr>
         <td>${items.length + 1}</td>
         <td class="description">Handling Charge</td>
+        <td>-</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
         <td>${this.formatCurrency(handlingCharge)}</td>
       </tr>
@@ -1039,6 +1040,7 @@ s
       <tr>
         <td>${vatRowNum}</td>
         <td class="description">VAT (${this.roundToTwo(vatRate)}%)</td>
+        <td>-</td>
         <td>${this.formatCurrency(vatAmount)}</td>
         <td>${this.formatCurrency(vatAmount)}</td>
       </tr>
@@ -1050,6 +1052,74 @@ s
     `;
 
     return `${itemRows}${extraRows}`;
+  }
+
+  private buildTwoVenturesRows(
+    items: any[] = [],
+    handlingCharge = 0,
+    vatAmount = 0,
+    vatRate = 0,
+    omitZeroHandlingCharge = false,
+  ): string {
+    if (!Array.isArray(items) || items.length === 0) {
+      return `
+        <tr>
+          <td>1</td>
+          <td class="desc">No invoice items</td>
+          <td>0</td>
+          <td>${this.formatCurrency(0)}</td>
+          <td>${this.formatCurrency(0)}</td>
+        </tr>
+      `;
+    }
+
+    const itemRows = items
+      .map((item, index) => {
+        const quantity = this.toNumber(item?.quantity);
+        const rate = this.toNumber(item?.rate);
+        const total = this.roundToTwo(quantity * rate);
+        const description = String(item?.description || '-');
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td class="desc">${description}</td>
+            <td>${quantity}</td>
+            <td>${this.formatCurrency(rate)}</td>
+            <td>${this.formatCurrency(total)}</td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    const showHandlingRow =
+      !omitZeroHandlingCharge || this.roundToTwo(handlingCharge) !== 0;
+    const handlingRowHtml = showHandlingRow
+      ? `
+      <tr>
+        <td>${items.length + 1}</td>
+        <td class="desc">Handling Charge</td>
+        <td>-</td>
+        <td>${this.formatCurrency(handlingCharge)}</td>
+        <td>${this.formatCurrency(handlingCharge)}</td>
+      </tr>
+    `
+      : '';
+    const showVatRow = this.shouldShowVatRow(vatRate);
+    const vatRowNum = items.length + (showHandlingRow ? 2 : 1);
+    const vatRowHtml = showVatRow
+      ? `
+      <tr>
+        <td>${vatRowNum}</td>
+        <td class="desc">VAT (${this.roundToTwo(vatRate)}%)</td>
+        <td>-</td>
+        <td>${this.formatCurrency(vatAmount)}</td>
+        <td>${this.formatCurrency(vatAmount)}</td>
+      </tr>
+    `
+      : '';
+
+    return `${itemRows}${handlingRowHtml}${vatRowHtml}`;
   }
 
   private getRailRoadTemplateData(invoice: any) {
@@ -1105,9 +1175,7 @@ s
     const itemTotal = Array.isArray(invoice?.items)
       ? invoice.items.reduce(
           (sum, item) =>
-            sum +
-            (this.toNumber(item?.total) ||
-              this.toNumber(item?.quantity) * this.toNumber(item?.rate)),
+            sum + this.toNumber(item?.quantity) * this.toNumber(item?.rate),
           0,
         )
       : 0;
@@ -1148,9 +1216,7 @@ s
     const itemTotal = Array.isArray(invoice?.items)
       ? invoice.items.reduce(
           (sum, item) =>
-            sum +
-            (this.toNumber(item?.total) ||
-              this.toNumber(item?.quantity) * this.toNumber(item?.rate)),
+            sum + this.toNumber(item?.quantity) * this.toNumber(item?.rate),
           0,
         )
       : 0;
@@ -1159,7 +1225,7 @@ s
     const vatRate = this.getInvoiceVatRate(invoice);
     const vatAmount = this.calculateVatAmount(subtotalBeforeVat, vatRate);
     const grandTotal = this.roundToTwo(subtotalBeforeVat + vatAmount);
-    const rowsHtml = this.buildStaidGlobalRows(
+    const rowsHtml = this.buildTwoVenturesRows(
       invoice?.items || [],
       handlingCharge,
       vatAmount,
