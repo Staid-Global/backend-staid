@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { BaseResponseTypeDTO, IPaginationFilter, SendEmailDTOOOOOO } from 'src/utils/utils.types';
+import {
+  BaseResponseTypeDTO,
+  IPaginationFilter,
+  SendEmailDTOOOOOO,
+} from 'src/utils/utils.types';
 import { InjectModel } from '@nestjs/mongoose';
 import { Invoice } from './entities/invoice.entity';
 import { Model } from 'mongoose';
@@ -80,7 +84,7 @@ export class InvoiceService {
     } catch (error) {
       throw new BadRequestException(
         'Error: Can not add a invoice',
-        error.message,
+        error instanceof Error ? error.message : String(error),
       );
     }
   }
@@ -125,6 +129,14 @@ export class InvoiceService {
       invoice.vat = payload.vat;
     }
 
+    if ('lpo' in payload) {
+      invoice.lpo = payload.lpo;
+    }
+
+    if ('date' in payload) {
+      invoice.date = payload.date;
+    }
+
     invoice.edited_by = user._id.toString();
     await invoice.save();
     try {
@@ -163,7 +175,7 @@ export class InvoiceService {
 
   async findAInvoiceByHashedId(id: string): Promise<BaseResponseTypeDTO> {
     try {
-      const invoice = await this.invoiceModel.findOne({hashed_id: id}).exec();
+      const invoice = await this.invoiceModel.findOne({ hashed_id: id }).exec();
 
       if (!invoice) {
         throw new NotFoundException('invoice not found');
@@ -374,8 +386,10 @@ export class InvoiceService {
       doc.end();
     });
   }
-  
-  private async buildInvoiceEmailHtml(payload: SendEmailDTOOOOOO): Promise<string> {
+
+  private async buildInvoiceEmailHtml(
+    payload: SendEmailDTOOOOOO,
+  ): Promise<string> {
     let body = '';
     const invoice = await this.findAInvoiceByHashedId(payload.hashedId);
     const com = await this.companyModel.findById(invoice.data.company);
@@ -720,7 +734,6 @@ s
       code: HttpStatus.OK,
     };
   }
-
 
   async sendInvoiceEmaill(
     payload: SendEmailDTOOOOOO,
@@ -1123,7 +1136,9 @@ s
   }
 
   private getRailRoadTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt ? new Date(invoice.createdAt) : new Date();
+    const createdAt = invoice?.createdAt
+      ? new Date(invoice.createdAt)
+      : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
     const month = createdAt
       .toLocaleString('en-US', { month: 'short' })
@@ -1166,7 +1181,9 @@ s
   }
 
   private getStaidGlobalTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt ? new Date(invoice.createdAt) : new Date();
+    const createdAt = invoice?.createdAt
+      ? new Date(invoice.createdAt)
+      : new Date();
     const invoiceDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -1207,7 +1224,9 @@ s
   }
 
   private getTwoVenturesTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt ? new Date(invoice.createdAt) : new Date();
+    const createdAt = invoice?.createdAt
+      ? new Date(invoice.createdAt)
+      : new Date();
     const invoiceDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -1265,7 +1284,12 @@ s
   }
 
   private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
-    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const imagePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'images',
+      imageFile,
+    );
     const fileBuffer = await readFile(imagePath);
     const mimeType = this.getMimeTypeForImage(imageFile);
     return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -1337,7 +1361,8 @@ s
       );
     });
 
-    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const logoDataUri =
+      await this.buildTemplateAssetDataUri('2Ventures-logo.png');
     const signatureDataUri = await this.buildTemplateAssetDataUri(
       'signature-2-venture-invoice.png',
     );
@@ -1364,7 +1389,10 @@ s
     const page = await browser.newPage();
 
     try {
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       const pdfBytes = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -1384,14 +1412,20 @@ s
       'staid-global.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileStaidGlobalInvoiceTemplate(template, invoice);
+    const html = await this.compileStaidGlobalInvoiceTemplate(
+      template,
+      invoice,
+    );
 
     const browser = await launchPuppeteerBrowser();
 
     const page = await browser.newPage();
 
     try {
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       const pdfBytes = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -1411,14 +1445,20 @@ s
       '2-ventures.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileTwoVenturesInvoiceTemplate(template, invoice);
+    const html = await this.compileTwoVenturesInvoiceTemplate(
+      template,
+      invoice,
+    );
 
     const browser = await launchPuppeteerBrowser();
 
     const page = await browser.newPage();
 
     try {
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       const pdfBytes = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -1429,6 +1469,4 @@ s
       await page.close();
     }
   }
-
-
 }

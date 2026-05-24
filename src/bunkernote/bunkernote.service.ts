@@ -61,7 +61,7 @@ export class BunkernoteService {
     } catch (error) {
       throw new BadRequestException(
         'Error: Can not add a Bunker',
-        error.message,
+        error instanceof Error ? error.message : String(error),
       );
     }
   }
@@ -358,7 +358,12 @@ export class BunkernoteService {
   }
 
   private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
-    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const imagePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'images',
+      imageFile,
+    );
     const fileBuffer = await readFile(imagePath);
     const mimeType = this.getMimeTypeForImage(imageFile);
     return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -385,7 +390,9 @@ export class BunkernoteService {
       PORT: String(bunkernote?.port ?? '-'),
       SELLER_NAME: sellerDisplayName,
       DELIVERY: String(bunkernote?.delivery ?? '-'),
-      DATE_OF_COMMENCEMENT: this.formatDisplayDate(bunkernote?.dateOfCommencement),
+      DATE_OF_COMMENCEMENT: this.formatDisplayDate(
+        bunkernote?.dateOfCommencement,
+      ),
       PRODUCT: String(bunkernote?.product ?? '-'),
       QUANTITY: String(bunkernote?.quantity ?? '-'),
       START_PUMPING: String(bunkernote?.start_pumping ?? '-'),
@@ -408,7 +415,8 @@ export class BunkernoteService {
       html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
     });
 
-    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const logoDataUri =
+      await this.buildTemplateAssetDataUri('2Ventures-logo.png');
     const signatureDataUri = await this.buildTemplateAssetDataUri(
       'signature-2-ventures.png',
     );
@@ -425,7 +433,10 @@ export class BunkernoteService {
     const page = await browser.newPage();
 
     try {
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       const pdfBytes = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -591,7 +602,6 @@ export class BunkernoteService {
       code: HttpStatus.OK,
     };
   }
-
 
   async sendBunkernoteEmaill(
     payload: SendEmailDTOOOOOO,

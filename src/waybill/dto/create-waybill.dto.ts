@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
   IsArray,
+  IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -42,4 +43,12 @@ export class CreateWaybillDto {
   @ApiProperty({ example: 'rail-Road Track', description: '' })
   @IsString()
   category?: string;
+
+  @ApiProperty({ example: 1003, description: '', required: true })
+  @IsNumber()
+  lpo: number;
+
+  @ApiProperty({ example: '2024-06-01T00:00:00.000Z', description: '' })
+  @IsString()
+  date: Date;
 }

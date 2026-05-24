@@ -68,6 +68,9 @@ export class Quotation {
 
   @Prop({ default: Date.now })
   updatedAt: Date;
+
+  @Prop({ default: Date.now })
+  date: Date;
 }
 
 export type QuotationDocument = Quotation & Document;

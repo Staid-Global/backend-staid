@@ -249,7 +249,12 @@ export class QuotationService {
   }
 
   private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
-    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const imagePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'images',
+      imageFile,
+    );
     const fileBuffer = await readFile(imagePath);
     const mimeType = this.getMimeTypeForImage(imageFile);
     return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -379,9 +384,13 @@ export class QuotationService {
   }
 
   private getRailRoadQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt ? new Date(quotation.createdAt) : new Date();
+    const createdAt = quotation?.createdAt
+      ? new Date(quotation.createdAt)
+      : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
-    const month = createdAt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const month = createdAt
+      .toLocaleString('en-US', { month: 'short' })
+      .toUpperCase();
     const year = `${createdAt.getFullYear()}`;
     const itemTotal = Array.isArray(quotation?.items)
       ? quotation.items.reduce(
@@ -417,7 +426,9 @@ export class QuotationService {
   }
 
   private getStaidGlobalQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt ? new Date(quotation.createdAt) : new Date();
+    const createdAt = quotation?.createdAt
+      ? new Date(quotation.createdAt)
+      : new Date();
     const quotationDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -455,7 +466,9 @@ export class QuotationService {
   }
 
   private getTwoVenturesQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt ? new Date(quotation.createdAt) : new Date();
+    const createdAt = quotation?.createdAt
+      ? new Date(quotation.createdAt)
+      : new Date();
     const quotationDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -499,7 +512,10 @@ export class QuotationService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
     const logoDataUri = await this.buildTemplateAssetDataUri('Rail-road.png');
@@ -523,11 +539,16 @@ export class QuotationService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
     const logoDataUri = await this.buildTemplateAssetDataUri('StaidLogo.svg');
-    const signatureDataUri = await this.buildTemplateAssetDataUri('staid-signature.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'staid-signature.png',
+    );
 
     const compiledHtml = html
       .replace('../images/StaidLogo.svg', logoDataUri)
@@ -545,11 +566,17 @@ export class QuotationService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
-    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
-    const signatureDataUri = await this.buildTemplateAssetDataUri('signature-2-ventures.png');
+    const logoDataUri =
+      await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'signature-2-ventures.png',
+    );
 
     const compiledHtml = html
       .replace('../images/2Ventures-logo.png', logoDataUri)
@@ -565,8 +592,15 @@ export class QuotationService {
     const page = await browser.newPage();
 
     try {
-      await page.setViewport({ width: 800, height: 1120, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setViewport({
+        width: 800,
+        height: 1120,
+        deviceScaleFactor: 1,
+      });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       await page.emulateMediaType('print');
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -587,11 +621,16 @@ export class QuotationService {
       'rail-road.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileRailRoadQuotationTemplate(template, quotation);
+    const html = await this.compileRailRoadQuotationTemplate(
+      template,
+      quotation,
+    );
     return this.renderQuotationTemplateToPdf(html);
   }
 
-  private async generateStaidGlobalQuotationPdf(quotation: any): Promise<Buffer> {
+  private async generateStaidGlobalQuotationPdf(
+    quotation: any,
+  ): Promise<Buffer> {
     const templatePath = join(
       process.cwd(),
       'receipt-templates',
@@ -599,11 +638,16 @@ export class QuotationService {
       'staid-global.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileStaidGlobalQuotationTemplate(template, quotation);
+    const html = await this.compileStaidGlobalQuotationTemplate(
+      template,
+      quotation,
+    );
     return this.renderQuotationTemplateToPdf(html);
   }
 
-  private async generateTwoVenturesQuotationPdf(quotation: any): Promise<Buffer> {
+  private async generateTwoVenturesQuotationPdf(
+    quotation: any,
+  ): Promise<Buffer> {
     const templatePath = join(
       process.cwd(),
       'receipt-templates',
@@ -611,7 +655,10 @@ export class QuotationService {
       '2-ventures.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileTwoVenturesQuotationTemplate(template, quotation);
+    const html = await this.compileTwoVenturesQuotationTemplate(
+      template,
+      quotation,
+    );
     return this.renderQuotationTemplateToPdf(html);
   }
 
@@ -659,7 +706,7 @@ export class QuotationService {
     } catch (error) {
       throw new BadRequestException(
         'Error: Can not add a quotation',
-        error.message,
+        error instanceof Error ? error.message : String(error),
       );
     }
   }
@@ -711,6 +758,10 @@ export class QuotationService {
 
     if ('handling_charge' in payload) {
       quotation.handling_charge = payload.handling_charge;
+    }
+
+    if ('date' in payload) {
+      quotation.date = payload.date;
     }
 
     quotation.edited_by = user._id.toString();

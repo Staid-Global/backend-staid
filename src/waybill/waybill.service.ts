@@ -79,7 +79,7 @@ export class WaybillService {
     } catch (error) {
       throw new BadRequestException(
         'Error: Can not add a waybill',
-        error.message,
+        error instanceof Error ? error.message : String(error),
       );
     }
   }
@@ -115,6 +115,14 @@ export class WaybillService {
 
     if ('category' in payload) {
       waybill.category = payload.category;
+    }
+
+    if ('date' in payload) {
+      waybill.date = payload.date;
+    }
+
+    if ('lpo' in payload) {
+      waybill.lpo = payload.lpo;
     }
 
     waybill.edited_by = user._id.toString();
@@ -373,7 +381,12 @@ export class WaybillService {
   }
 
   private async buildTemplateAssetDataUri(imageFile: string): Promise<string> {
-    const imagePath = join(process.cwd(), 'receipt-templates', 'images', imageFile);
+    const imagePath = join(
+      process.cwd(),
+      'receipt-templates',
+      'images',
+      imageFile,
+    );
     const fileBuffer = await readFile(imagePath);
     const mimeType = this.getMimeTypeForImage(imageFile);
     return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -427,9 +440,13 @@ export class WaybillService {
   }
 
   private getRailRoadWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const createdAt = waybill?.createdAt
+      ? new Date(waybill.createdAt)
+      : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
-    const month = createdAt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const month = createdAt
+      .toLocaleString('en-US', { month: 'short' })
+      .toUpperCase();
     const year = `${createdAt.getFullYear()}`;
 
     return {
@@ -443,7 +460,9 @@ export class WaybillService {
   }
 
   private getStaidGlobalWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const createdAt = waybill?.createdAt
+      ? new Date(waybill.createdAt)
+      : new Date();
     const waybillDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -461,7 +480,9 @@ export class WaybillService {
   }
 
   private getTwoVenturesWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt ? new Date(waybill.createdAt) : new Date();
+    const createdAt = waybill?.createdAt
+      ? new Date(waybill.createdAt)
+      : new Date();
     const waybillDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -486,7 +507,10 @@ export class WaybillService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
     const logoDataUri = await this.buildTemplateAssetDataUri('Rail-road.png');
@@ -507,11 +531,16 @@ export class WaybillService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
     const logoDataUri = await this.buildTemplateAssetDataUri('StaidLogo.svg');
-    const signatureDataUri = await this.buildTemplateAssetDataUri('staid-signature.png');
+    const signatureDataUri = await this.buildTemplateAssetDataUri(
+      'staid-signature.png',
+    );
 
     return html
       .replace('../images/StaidLogo.svg', logoDataUri)
@@ -526,10 +555,14 @@ export class WaybillService {
     let html = template;
 
     Object.entries(placeholders).forEach(([key, value]) => {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+      html = html.replace(
+        new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
+        String(value ?? ''),
+      );
     });
 
-    const logoDataUri = await this.buildTemplateAssetDataUri('2Ventures-logo.png');
+    const logoDataUri =
+      await this.buildTemplateAssetDataUri('2Ventures-logo.png');
     const signatureDataUri = await this.buildTemplateAssetDataUri(
       'signature-2-ventures.png',
     );
@@ -545,8 +578,15 @@ export class WaybillService {
     const page = await browser.newPage();
 
     try {
-      await page.setViewport({ width: 800, height: 1120, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.setViewport({
+        width: 800,
+        height: 1120,
+        deviceScaleFactor: 1,
+      });
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
       await page.emulateMediaType('print');
       const pdfBytes = await page.pdf({
         format: 'A4',
@@ -579,7 +619,10 @@ export class WaybillService {
       'staid-global.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileStaidGlobalWaybillTemplate(template, waybill);
+    const html = await this.compileStaidGlobalWaybillTemplate(
+      template,
+      waybill,
+    );
     return this.renderWaybillTemplateToPdf(html);
   }
 
@@ -591,7 +634,10 @@ export class WaybillService {
       '2-ventures.html',
     );
     const template = await readFile(templatePath, 'utf8');
-    const html = await this.compileTwoVenturesWaybillTemplate(template, waybill);
+    const html = await this.compileTwoVenturesWaybillTemplate(
+      template,
+      waybill,
+    );
     return this.renderWaybillTemplateToPdf(html);
   }
 
@@ -1007,7 +1053,9 @@ export class WaybillService {
     }
 
     if (!body.trim()) {
-      throw new Error(`No email template found for category: ${waybill.category}`);
+      throw new Error(
+        `No email template found for category: ${waybill.category}`,
+      );
     }
 
     await this.mailjetSrv.sendMail(body, payload.subject, payload.email, [

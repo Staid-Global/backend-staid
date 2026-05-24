@@ -66,4 +66,8 @@ export class CreateQuotationDto {
   @ApiProperty({ example: 'Draft', description: 'Status' })
   @IsString()
   status?: string;
+
+  @ApiProperty({ example: '2024-06-01T00:00:00.000Z', description: '' })
+  @IsString()
+  date: Date;
 }

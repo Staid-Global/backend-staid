@@ -28,7 +28,7 @@ export class Invoice {
   @Prop()
   hashed_id: string;
 
-  @Prop({ default: 1000 })
+  @Prop({})
   lpo: number;
 
   @Prop({ ref: 'Company' })
@@ -56,6 +56,9 @@ export class Invoice {
   edited_by: string;
 
   @Prop({ default: Date.now })
+  date: Date;
+
+  @Prop({ default: Date.now })
   createdAt: Date;
 
   @Prop({ default: Date.now })
@@ -80,7 +83,7 @@ InvoiceSchema.pre<InvoiceDocument>('save', async function (next) {
     ).exec();
 
     this.invoice_id = lastInvoice ? lastInvoice.invoice_id + 1 : 1;
-    this.lpo = lastInvoice ? lastInvoice.lpo + 1 : 1001;
+    // this.lpo = lastInvoice ? lastInvoice.lpo + 1 : 1001;
   }
   next();
 });

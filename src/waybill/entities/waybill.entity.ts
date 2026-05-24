@@ -21,7 +21,7 @@ export class WayObj {
 
 @Schema()
 export class Waybill {
-  @Prop({ default: 0 })
+  @Prop({})
   lpo: number;
 
   @Prop({ default: 0 })
@@ -53,6 +53,9 @@ export class Waybill {
 
   @Prop({ default: Date.now })
   updatedAt: Date;
+
+  @Prop({ default: Date.now })
+  date: Date;
 }
 
 export type WaybillDocument = Waybill & Document;
@@ -73,7 +76,7 @@ WaybillSchema.pre<WaybillDocument>('save', async function (next) {
     ).exec();
 
     this.way_id = lastWaybill ? lastWaybill.way_id + 1 : 1;
-    this.lpo = lastWaybill ? lastWaybill.lpo + 1 : 1001;
+    // this.lpo = lastWaybill ? lastWaybill.lpo + 1 : 1001;
   }
   next();
 });

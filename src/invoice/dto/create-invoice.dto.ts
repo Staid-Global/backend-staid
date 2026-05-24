@@ -52,4 +52,12 @@ export class CreateInvoiceDto {
   @ApiProperty({ example: 0.075, description: '' })
   @IsNumber()
   vat: number;
+
+  @ApiProperty({ example: 1003, description: '', required: true })
+  @IsNumber()
+  lpo: number;
+
+  @ApiProperty({ example: '2024-06-01T00:00:00.000Z', description: '' })
+  @IsString()
+  date: Date;
 }
