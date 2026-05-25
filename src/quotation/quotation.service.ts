@@ -384,8 +384,8 @@ export class QuotationService {
   }
 
   private getRailRoadQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt
-      ? new Date(quotation.createdAt)
+    const createdAt = quotation.date ?? quotation?.createdAt
+      ? new Date(quotation.date ?? quotation.createdAt)
       : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
     const month = createdAt
@@ -426,8 +426,8 @@ export class QuotationService {
   }
 
   private getStaidGlobalQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt
-      ? new Date(quotation.createdAt)
+    const createdAt = quotation.date ?? quotation?.createdAt
+      ? new Date(quotation.date ??  quotation.createdAt)
       : new Date();
     const quotationDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -466,8 +466,8 @@ export class QuotationService {
   }
 
   private getTwoVenturesQuotationTemplateData(quotation: any) {
-    const createdAt = quotation?.createdAt
-      ? new Date(quotation.createdAt)
+    const createdAt = quotation.date ?? quotation?.createdAt
+      ? new Date(quotation.date ?? quotation.createdAt)
       : new Date();
     const quotationDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',

@@ -1136,8 +1136,8 @@ s
   }
 
   private getRailRoadTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt
-      ? new Date(invoice.createdAt)
+    const createdAt = invoice.date ?? invoice?.createdAt
+      ? new Date(invoice.date ?? invoice.createdAt)
       : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
     const month = createdAt
@@ -1181,8 +1181,8 @@ s
   }
 
   private getStaidGlobalTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt
-      ? new Date(invoice.createdAt)
+    const createdAt = invoice.date ?? invoice?.createdAt
+      ? new Date(invoice.date ?? invoice.createdAt)
       : new Date();
     const invoiceDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -1224,8 +1224,8 @@ s
   }
 
   private getTwoVenturesTemplateData(invoice: any) {
-    const createdAt = invoice?.createdAt
-      ? new Date(invoice.createdAt)
+    const createdAt = invoice.date ?? invoice?.createdAt
+      ? new Date(invoice.date ?? invoice.createdAt)
       : new Date();
     const invoiceDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',

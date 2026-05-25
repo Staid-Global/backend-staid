@@ -17,7 +17,7 @@ export class CreateInvoiceDto {
   @IsString()
   company: string;
 
-  @ApiProperty({ example: 'rail-Road Track', description: '' })
+  @ApiProperty({ example: 'rail-road-track', description: '' })
   @IsString()
   category?: string;
 

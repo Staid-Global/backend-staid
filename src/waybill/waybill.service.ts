@@ -440,8 +440,8 @@ export class WaybillService {
   }
 
   private getRailRoadWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt
-      ? new Date(waybill.createdAt)
+    const createdAt = waybill.date ?? waybill?.createdAt
+      ? new Date(waybill.date ?? waybill.createdAt)
       : new Date();
     const day = `${createdAt.getDate()}`.padStart(2, '0');
     const month = createdAt
@@ -460,8 +460,8 @@ export class WaybillService {
   }
 
   private getStaidGlobalWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt
-      ? new Date(waybill.createdAt)
+    const createdAt = waybill.date ?? waybill?.createdAt
+      ? new Date(waybill.date ?? waybill.createdAt)
       : new Date();
     const waybillDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -480,8 +480,8 @@ export class WaybillService {
   }
 
   private getTwoVenturesWaybillTemplateData(waybill: any) {
-    const createdAt = waybill?.createdAt
-      ? new Date(waybill.createdAt)
+    const createdAt = waybill.date ?? waybill?.createdAt
+      ? new Date(waybill.date ?? waybill.createdAt)
       : new Date();
     const waybillDate = createdAt.toLocaleDateString('en-GB', {
       day: '2-digit',
